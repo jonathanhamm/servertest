@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+	<head> 
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+		<script> 
+			$(document).ready(function() {
+				var submitPurchase = $('#submitPurchase');
+				submitPurchase.find('input[name=submit]').click(function() {
+					var value = submitPurchase.find('input[name=value]').val();
+					$.post('purchase', {'value':value, 'turd': 'turd'}, function() {
+						alert('hello son');
+					})
+					.fail(function() {
+						alert('failed');
+					}); 
+					return false;
+				});
+			});
+
+		</script>
+
+		<style>
+			.title {	
+				font-size: 120%;
+
+			}
+
+
+			@media(max-width: 600px) {
+				#submitPurchase input {
+
+				}
+			}
+
+			@media(max-width: 600px) {
+				.title {
+					font-size: 100%;
+				}
+			}
+
+
+		</style>
+
+		<title> HEY TURD </title>
+		<h1> ASDFASDF  </h1>
+
+
+	</head>
+
+	<body>
+		<div class="title"> 
+			<p> Enter SHIT </p>
+		<div>
+		<div class="form" id="submitPurchase">
+			<form action="" method="post">
+				$ 
+				<input name="value" class="value" type="number">
+				<input name="submit" class="submit" type="submit" value="Submit">
+			</form>
+		</div>
+
+	</body>
+</html>
+
