@@ -8,6 +8,7 @@ import akka.io.IO
 import spray.can.Http
 import spray.http._
 
+import scalikejdbc._
 
 import scala.util.{Try, Success, Failure}
 
@@ -50,7 +51,7 @@ class ServerRequest extends Actor {
 
         h.value match {
           case v if v.contains("application/x-www-form-urlencoded") ⇒ {
-            urlFormEncodeToMap(entity.asString)
+            handlePurchase(urlFormEncodeToMap(entity.asString))
             sender ! HttpResponse()
           }
           case mime ⇒ {
@@ -84,6 +85,31 @@ class ServerRequest extends Actor {
       }
     }
     .toMap[String,String]
+  }
+
+  def handlePurchase(m: Map[String, String]): Unit = {
+    m.get("name").flatMap {name =>
+      println("name: " + name)
+      m.get("value")
+    }
+    .flatMap { value =>
+      println("value: " + value)
+      m.get("category")
+    }
+    .flatMap { category =>
+      println("category: " + category)
+      m.get("date")
+    }
+    .foreach { date =>
+      println("date: " + date)
+      if(date.length > 0) {
+        date
+      }
+      else {
+        None
+      }
+    }
+
   }
 
 }

@@ -11,14 +11,22 @@
 					var name = submitPurchase.find('.itemName').val();
 					var value = submitPurchase.find('input[name=value]').val();
 					var category = submitPurchase.find('#purchaseCategory').val();
-					$.post('purchase', {'value':value, 'category':category, 'name':name}, function() {
-						alert('hello son');
+					var date = submitPurchase.find('input[name=date]').val();
+					$.post('purchase', {
+						'value':"value", value, 
+						'category':category, 
+						'name':name, 
+						'date': date
+					}, function() {
+
 					})
 					.fail(function() {
 						alert('failed');
 					}); 
 					return false;
 				});
+
+
 			});
 
 		</script>
@@ -42,10 +50,16 @@
 				transition: background-color 1s ease
 			}
 
+			.col1, .col2 {
+				display: inline;
+			}
+
 			@media(max-width: 600px) {
-				#submitPurchase input .value, #submitPurchase input .submit {
-					float: none;
+				.col1, .col2 {
+					display: block;
+					padding-left: 10%: 
 				}
+
 			}
 
 			@media(max-width: 600px) {
@@ -69,16 +83,21 @@
 		<div>
 		<div class="form" id="submitPurchase">
 			<form action="" method="post">
-				item: 
-				<input name="name" class="itemName" type="text">
-				<select class="dropdown" id="purchaseCategory"> 
-					<option value="food">food</option>
-					<option value="gas">gas</option>
-					<option value="household">household</option>
-				</select>
-					$ 
+				<div class="col1">
+					item: 
+					<input name="name" class="itemName" type="text">
+					<select class="dropdown" id="purchaseCategory"> 
+						<option value="food">food</option>
+						<option value="gas">gas</option>
+						<option value="household">household</option>
+					</select>
+				</div>
+				<div class="col2">
+					$
 					<input name="value" class="value" type="number">
+					<input name="date" class="date" type="date">
 					<input name="submit" class="submit" type="submit" value="Submit">
+				</div>
 			</form> 
 		</div>
 
