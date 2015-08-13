@@ -86,61 +86,6 @@ class ServerRequest extends Actor {
     .toMap[String,String]
   }
 
-  /*
-
-  		`id` INTEGER NOT NULL,
-		`value` FLOAT,
-		`account` INTEGER,
-		`category` VARCHAR(127),
-		`details` TEXT,
-		`date` DATE
-   */
-
-  /*
-
-
-  CREATE TABLE purchase (
-		`id` INTEGER NOT NULL,
-		`value` FLOAT,
-		`account` INTEGER,
-		`category` VARCHAR(127),
-		`details` TEXT,
-		`date` DATE
-		);
-
-DROP TABLE IF EXISTS credit;
-CREATE TABLE credit(
-		`id` INTEGER NOT NULL,
-		`value` FLOAT,
-		`account` INTEGER,
-		`source` INTEGER,
-		`date` DATE
-		);
-
-DROP TABLE IF EXISTS source;
-CREATE TABLE source(
-		`id` INTEGER NOT NULL,
-		`name` VARCHAR(127)
-		);
-
-DROP TABLE IF EXISTS account;
-CREATE TABLE account(
-		`id` INTEGER NOT NULL,
-		`name` VARCHAR(127),
-    `balance` FLOAT
-		);
-
-
-DROP TABLE IF EXISTS chron_payment;
-CREATE TABLE cron_payment(
-		`id` INTEGER NOT NULL,
-		`name` VARCHAR(127),
-		`last_update` DATE
-		);
-
-
-   */
-
   def handlePurchase(m: Map[String, String]): Unit = {
     val num = "\\d+(?:\\.\\d*)?"
 
@@ -158,18 +103,10 @@ CREATE TABLE cron_payment(
       val name = m("name")
       val date = m("date")
 
-
-      println("executing query")
-
       implicit val session = AutoSession
-
       DBs.setupAll()
       Class.forName("com.mysql.jdbc.Driver")
-
-
       sql"INSERT INTO purchase(`value`,`account`,`category`,`details`,`date`) values ($value,0,$category,$name,$date)".update().apply()
-
-
     }
     else {
       println("bad input data")
