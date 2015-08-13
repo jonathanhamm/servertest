@@ -9,6 +9,7 @@ import spray.can.Http
 import spray.http._
 
 import scalikejdbc._
+import scalikejdbc.config._
 
 import scala.util.{Try, Success, Failure}
 
@@ -21,7 +22,6 @@ class Server(port: Int) extends Actor with ActorLogging {
     }
     case msg ⇒ log.warning("Unkwown message: " + msg)
   }
-
 }
 
 class ServerRequest extends Actor {
@@ -48,7 +48,6 @@ class ServerRequest extends Actor {
     }
     case HttpRequest(HttpMethods.POST, Uri.Path(`route_purchase`), header, entity, _) ⇒ {
       header.find(_.name == "Content-Type").foreach{ h ⇒
-
         h.value match {
           case v if v.contains("application/x-www-form-urlencoded") ⇒ {
             handlePurchase(urlFormEncodeToMap(entity.asString))
@@ -81,35 +80,100 @@ class ServerRequest extends Actor {
         p(0) -> p(1)
       }
       else {
-        p(0) -> ""
+        p(0) -> null
       }
     }
     .toMap[String,String]
   }
 
-  def handlePurchase(m: Map[String, String]): Unit = {
-    m.get("name").flatMap {name =>
-      println("name: " + name)
-      m.get("value")
-    }
-    .flatMap { value =>
-      println("value: " + value)
-      m.get("category")
-    }
-    .flatMap { category =>
-      println("category: " + category)
-      m.get("date")
-    }
-    .foreach { date =>
-      println("date: " + date)
-      if(date.length > 0) {
-        date
-      }
-      else {
-        None
-      }
-    }
+  /*
 
+  		`id` INTEGER NOT NULL,
+		`value` FLOAT,
+		`account` INTEGER,
+		`category` VARCHAR(127),
+		`details` TEXT,
+		`date` DATE
+   */
+
+  /*
+
+
+  CREATE TABLE purchase (
+		`id` INTEGER NOT NULL,
+		`value` FLOAT,
+		`account` INTEGER,
+		`category` VARCHAR(127),
+		`details` TEXT,
+		`date` DATE
+		);
+
+DROP TABLE IF EXISTS credit;
+CREATE TABLE credit(
+		`id` INTEGER NOT NULL,
+		`value` FLOAT,
+		`account` INTEGER,
+		`source` INTEGER,
+		`date` DATE
+		);
+
+DROP TABLE IF EXISTS source;
+CREATE TABLE source(
+		`id` INTEGER NOT NULL,
+		`name` VARCHAR(127)
+		);
+
+DROP TABLE IF EXISTS account;
+CREATE TABLE account(
+		`id` INTEGER NOT NULL,
+		`name` VARCHAR(127),
+    `balance` FLOAT
+		);
+
+
+DROP TABLE IF EXISTS chron_payment;
+CREATE TABLE cron_payment(
+		`id` INTEGER NOT NULL,
+		`name` VARCHAR(127),
+		`last_update` DATE
+		);
+
+
+   */
+
+  def handlePurchase(m: Map[String, String]): Unit = {
+    val num = "\\d+(?:\\.\\d*)?"
+
+    if(
+      m.exists{case(k, v) ⇒ k == "value" && v.matches(num)}
+      &&
+      m.exists{case(k, _) ⇒ k == "category"}
+      &&
+      m.exists{case(k, _) ⇒ k == "name"}
+      &&
+      m.exists{case(k, _) ⇒ k == "date"}
+    ) {
+      val value = m("value").toFloat
+      val category = m("category")
+      val name = m("name")
+      val date = m("date")
+
+
+      println("executing query")
+
+      implicit val session = AutoSession
+
+      DBs.setupAll()
+      Class.forName("com.mysql.jdbc.Driver")
+
+
+      sql"INSERT INTO purchase(`value`,`account`,`category`,`details`,`date`) values ($value,0,$category,$name,$date)".update().apply()
+
+
+    }
+    else {
+      println("bad input data")
+    }
   }
 
 }
@@ -117,17 +181,19 @@ class ServerRequest extends Actor {
 object Start {
   implicit val system = ActorSystem()
 
-
   def main(args: Array[String]): Unit = {
+
+
     if(args.length != 1) {
-      println("Specify Port");
+      println("Specify Port")
     }
     else {
       val listenPort = args(0).toInt
 
       val actor = system.actorOf(Props(new Server(listenPort)))
       IO(Http) ! Http.Bind(actor, interface = "localhost", port = listenPort)
-
     }
+
+    DBs.closeAll()
   }
 }

@@ -5,7 +5,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
 		<script> 
-			$(document).ready(function() {
+			function prepareSubmitPurchase() {
 				var submitPurchase = $('#submitPurchase');
 				submitPurchase.find('input[name=submit]').click(function() {
 					var name = submitPurchase.find('.itemName').val();
@@ -17,18 +17,20 @@
 						'category':category, 
 						'name':name, 
 						'date': date
-					}, function() {
-
+					}, 
+					function() {
+						//success
 					})
 					.fail(function() {
 						alert('failed');
 					}); 
 					return false;
 				});
+			}
 
-
+			$(document).ready(function() {
+				prepareSubmitPurchase();
 			});
-
 		</script>
 
 		<style>
@@ -46,26 +48,39 @@
 			}
 
 			.form .submit:hover {
-				background-color: rgb(100,255,255);
+				background-color: rgb(100,100,255);
 				transition: background-color 1s ease
+			}
+
+			.form .dropdown:hover {
+				background-color: rgb(100,100,255);
+				transition: background-color 1s ease;
+			}
+
+			.form .label {
+				display: inherit;
 			}
 
 			.col1, .col2 {
 				display: inline;
 			}
 
-			@media(max-width: 600px) {
+			@media(max-width: 615px) {
+				.title {
+					font-size: 100%;
+				}
+
 				.col1, .col2 {
 					display: block;
 					padding-left: 10%: 
 				}
 
-			}
-
-			@media(max-width: 600px) {
-				.title {
-					font-size: 100%;
+				.form .label {
+					display: inline-block;
+					width: 40px;
+					text-align: right;
 				}
+
 			}
 
 
@@ -84,7 +99,7 @@
 		<div class="form" id="submitPurchase">
 			<form action="" method="post">
 				<div class="col1">
-					item: 
+					<div class="label">item:</div>
 					<input name="name" class="itemName" type="text">
 					<select class="dropdown" id="purchaseCategory"> 
 						<option value="food">food</option>
@@ -93,16 +108,13 @@
 					</select>
 				</div>
 				<div class="col2">
-					$
+					<div class="label">$</div>
 					<input name="value" class="value" type="number">
 					<input name="date" class="date" type="date">
 					<input name="submit" class="submit" type="submit" value="Submit">
 				</div>
 			</form> 
 		</div>
-
-
-
 	</body>
 </html>
 
