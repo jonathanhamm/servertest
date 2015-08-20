@@ -50,8 +50,7 @@ class ServerRequest extends Actor {
       header.find(_.name == "Content-Type").foreach{ h ⇒
         h.value match {
           case v if v.contains("application/x-www-form-urlencoded") ⇒ {
-            handlePurchase(urlFormEncodeToMap(entity.asString))
-            sender ! HttpResponse()
+            sender ! handlePurchase(urlFormEncodeToMap(entity.asString))
           }
           case mime ⇒ {
             println("unknown mime type: " + mime)
@@ -86,11 +85,11 @@ class ServerRequest extends Actor {
     .toMap[String,String]
   }
 
-  def handlePurchase(m: Map[String, String]): Unit = {
-    val num = "\\d+(?:\\.\\d*)?"
+  def handlePurchase(m: Map[String, String]): HttpResponse = {
+    val num = "^\\d+(?:\\.\\d*)?$"
 
     if(
-      m.exists{case(k, v) ⇒ k == "value" && v.matches(num)}
+      m.exists{case(k, v) ⇒ k == "value" && v != null && v.matches(num)}
       &&
       m.exists{case(k, _) ⇒ k == "category"}
       &&
@@ -106,10 +105,12 @@ class ServerRequest extends Actor {
       implicit val session = AutoSession
       DBs.setupAll()
       Class.forName("com.mysql.jdbc.Driver")
+
       sql"INSERT INTO purchase(`value`,`account`,`category`,`details`,`date`) values ($value,0,$category,$name,$date)".update().apply()
+      HttpResponse(status = StatusCodes.OK)
     }
     else {
-      println("bad input data")
+      HttpResponse(status = StatusCodes.InternalServerError, entity = """["Invalid Input Supplied to Server for Purchase"]""")
     }
   }
 

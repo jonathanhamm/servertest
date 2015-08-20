@@ -1,36 +1,69 @@
 <!DOCTYPE html>
 <html>
-
 	<head> 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
 		<script> 
 			function prepareSubmitPurchase() {
-				var submitPurchase = $('#submitPurchase');
+				const submitPurchase = $('#submitPurchase');
 				submitPurchase.find('input[name=submit]').click(function() {
-					var name = submitPurchase.find('.itemName').val();
-					var value = submitPurchase.find('input[name=value]').val();
-					var category = submitPurchase.find('#purchaseCategory').val();
-					var date = submitPurchase.find('input[name=date]').val();
-					$.post('purchase', {
-						'value':"value", value, 
-						'category':category, 
-						'name':name, 
-						'date': date
-					}, 
-					function() {
-						//success
-					})
-					.fail(function() {
-						alert('failed');
-					}); 
+					const name = submitPurchase.find('.itemName').val();
+					const value = submitPurchase.find('input[name=value]').val();
+					const category = submitPurchase.find('#purchaseCategory').val();
+					const dateIn = submitPurchase.find('input[name=date]').val();
+					const date = validateDate(dateIn);
+
+					if(true /*validatePurchaseValue(name) && validateValue(value) && category*/) { 
+						$.post('purchase', {
+							'value':"value", value, 
+							'category':category, 
+							'name':name, 
+							'date': date
+						}, 
+						function(data, status, hahah) {
+							//success
+							console.log("success: " + data + " --- " + status + "  " );
+						})
+						.fail(function() {
+							const body = arguments[0];
+							const errs = JSON.parse(body["responseText"])
+
+							errs.map(
+								function(error) {
+									console.log("error: " + error);
+								}
+							);
+
+						}); 
+					}
+					else {
+						document.write("RETARD");
+					}
 					return false;
 				});
 			}
 
+			function validateDate(date) {
+				const match = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+				if(match && match.length == 3) {
+					return new Date(match[1], match[2], match[3]);
+				}
+				else {
+					return new Date();
+				}
+			}
+
+			function validateValue(value) {
+				return /^\d+(?:\.\d*)?$/
+						.test(value)
+			}
+
+
 			$(document).ready(function() {
 				prepareSubmitPurchase();
 			});
+
 		</script>
 
 		<style>
@@ -49,12 +82,17 @@
 
 			.form .submit:hover {
 				background-color: rgb(100,100,255);
-				transition: background-color 1s ease
+				transition: background-color
+				   -webkit-transform: rotate(360deg);
+  				  transform: rotate(360deg);
+  				  transition-duration: 2s;
 			}
 
 			.form .dropdown:hover {
-				background-color: rgb(100,100,255);
-				transition: background-color 1s ease;
+				transition: background-color
+				-webkit-transform: rotate(360deg);
+  				transform: rotate(360deg);
+  				transition-duration: 2s;
 			}
 
 			.form .label {
@@ -80,7 +118,6 @@
 					width: 40px;
 					text-align: right;
 				}
-
 			}
 
 
@@ -95,8 +132,7 @@
 	<body>
 		<div class="title"> 
 			<p> Input Some SHIT </p>
-		<div>
-		<div class="form" id="submitPurchase">
+ 		<div class="form" id="submitPurchase">
 			<form action="" method="post">
 				<div class="col1">
 					<div class="label">item:</div>
