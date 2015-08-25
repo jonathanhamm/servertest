@@ -13,6 +13,14 @@ import scalikejdbc.config._
 
 import scala.util.{Try, Success, Failure}
 
+trait ServerGlobal {
+  val root = "web"
+
+  def readPage(path: String) = {
+    Try(scala.io.Source.fromFile(root + path))
+  }
+}
+
 class Server(port: Int) extends Actor with ActorLogging {
 
   override def receive: Receive = {
@@ -24,33 +32,26 @@ class Server(port: Int) extends Actor with ActorLogging {
   }
 }
 
-class ServerRequest extends Actor {
+class ServerRequest extends Actor with ServerGlobal {
   /* routes */
   val route_home = "/home.html"
+  val route_history = "/history.html"
   val route_purchase = "/purchase"
 
   override def receive: Receive = {
 
     case HttpRequest(HttpMethods.GET, Uri.Path(`route_home`), _, _, _) ⇒ {
-      readPage(route_home) match {
-        case Success(buffer) ⇒ {
-          val body = buffer.mkString
-          sender ! HttpResponse(
-            entity = HttpEntity(MediaTypes.`text/html`, body)
-          ).withHeaders(List(
-            HttpHeaders.Connection("close")
-          ))
-        }
-        case Failure(f) ⇒ {
-          println("read failed " + f.getMessage)
-        }
-      }
+      sender ! serveGet(`route_home`)
+
+    }
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_history`), _, _, _) ⇒ {
+      sender ! serveGet(`route_history`)
     }
     case HttpRequest(HttpMethods.POST, Uri.Path(`route_purchase`), header, entity, _) ⇒ {
       header.find(_.name == "Content-Type").foreach{ h ⇒
         h.value match {
           case v if v.contains("application/x-www-form-urlencoded") ⇒ {
-            sender ! handlePurchase(urlFormEncodeToMap(entity.asString))
+              sender ! handlePurchase(urlFormEncodeToMap(entity.asString))
           }
           case mime ⇒ {
             println("unknown mime type: " + mime)
@@ -67,8 +68,22 @@ class ServerRequest extends Actor {
     }
   }
 
-  def readPage(path: String) = {
-    Try(scala.io.Source.fromFile("web" + path))
+  def serveGet(route: String): HttpResponse = {
+    readPage(route) match {
+      case Success(buffer) ⇒ {
+        val body = buffer.mkString
+        val included = SSI.include(body)
+        HttpResponse(
+          entity = HttpEntity(MediaTypes.`text/html`, included)
+        ).withHeaders(List(
+          HttpHeaders.Connection("close")
+        ))
+      }
+      case Failure(f) ⇒ {
+        println("read failed: " + f.getMessage)
+        HttpResponse(status = StatusCodes.NotFound)
+      }
+    }
   }
 
   def urlFormEncodeToMap(data: String): Map[String,String] = {

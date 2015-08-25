@@ -72,6 +72,29 @@
 				background-color: rgb(210,220,225)
 			}
 
+			ul {
+				list-style-type: none;
+
+			}
+
+			li {
+				display: inline-block;
+				border-style: solid;
+				border-width: 1px;
+				border-color: black;
+				border-radius: 5px;
+				background-color: gray;
+			}
+
+			li > a {
+				padding: 5px;
+				text-decoration: none;
+			}
+
+			#home-menu {
+				display: block;
+			}
+
 			.title {	
 				font-size: 120%;
 			}
@@ -119,8 +142,6 @@
 					text-align: right;
 				}
 			}
-
-
 		</style>
 
 		<title> HEY TURD </title>
@@ -130,8 +151,12 @@
 	</head>
 
 	<body>
+
+		<!--#include file="/menu.html"-->
+
 		<div class="title"> 
 			<p> Input Some SHIT </p>
+		</div>
  		<div class="form" id="submitPurchase">
 			<form action="" method="post">
 				<div class="col1">
