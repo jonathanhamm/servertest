@@ -13,7 +13,7 @@
 					const dateIn = submitPurchase.find('input[name=date]').val();
 					const date = validateDate(dateIn);
 
-					if(true /*validatePurchaseValue(name) && validateValue(value) && category*/) { 
+					if(validateValue(value) && category) { 
 						$.post('purchase', {
 							'value':"value", value, 
 							'category':category, 
@@ -27,7 +27,6 @@
 						.fail(function() {
 							const body = arguments[0];
 							const errs = JSON.parse(body["responseText"])
-
 							errs.map(
 								function(error) {
 									console.log("error: " + error);
@@ -37,10 +36,12 @@
 						}); 
 					}
 					else {
-						document.write("RETARD");
+						console.log("You supplied RETARDED input");
+						alert("You supplied RETARDED input");
 					}
 					return false;
 				});
+
 			}
 
 			function validateDate(date) {
@@ -59,7 +60,6 @@
 						.test(value)
 			}
 
-
 			$(document).ready(function() {
 				prepareSubmitPurchase();
 			});
@@ -70,29 +70,6 @@
 
 			body {
 				background-color: rgb(210,220,225)
-			}
-
-			ul {
-				list-style-type: none;
-
-			}
-
-			li {
-				display: inline-block;
-				border-style: solid;
-				border-width: 1px;
-				border-color: black;
-				border-radius: 5px;
-				background-color: gray;
-			}
-
-			li > a {
-				padding: 5px;
-				text-decoration: none;
-			}
-
-			#home-menu {
-				display: block;
 			}
 
 			.title {	
@@ -106,9 +83,9 @@
 			.form .submit:hover {
 				background-color: rgb(100,100,255);
 				transition: background-color
-				   -webkit-transform: rotate(360deg);
-  				  transform: rotate(360deg);
-  				  transition-duration: 2s;
+				-webkit-transform: rotate(360deg);
+  				transform: rotate(360deg);
+  				transition-duration: 2s;
 			}
 
 			.form .dropdown:hover {
@@ -130,12 +107,10 @@
 				.title {
 					font-size: 100%;
 				}
-
 				.col1, .col2 {
 					display: block;
 					padding-left: 10%: 
 				}
-
 				.form .label {
 					display: inline-block;
 					width: 40px;
@@ -146,15 +121,12 @@
 
 		<title> HEY TURD </title>
 		<h1> ~~~~~~~~~~~~~~~~  </h1>
-
-
 	</head>
 
 	<body>
-
 		<!--#include file="/menu.html"-->
-
 		<div class="title"> 
+
 			<p> Input Some SHIT </p>
 		</div>
  		<div class="form" id="submitPurchase">

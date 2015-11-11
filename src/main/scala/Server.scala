@@ -38,6 +38,11 @@ class ServerRequest extends Actor with ServerGlobal {
   val route_history = "/history.html"
   val route_purchase = "/purchase"
 
+  /* DB setup */
+  implicit val session = AutoSession
+  DBs.setupAll()
+  Class.forName("com.mysql.jdbc.Driver")
+
   override def receive: Receive = {
 
     case HttpRequest(HttpMethods.GET, Uri.Path(`route_home`), _, _, _) ⇒ {
@@ -117,26 +122,20 @@ class ServerRequest extends Actor with ServerGlobal {
       val name = m("name")
       val date = m("date")
 
-      implicit val session = AutoSession
-      DBs.setupAll()
-      Class.forName("com.mysql.jdbc.Driver")
 
-      sql"INSERT INTO purchase(`value`,`account`,`category`,`details`,`date`) values ($value,0,$category,$name,$date)".update().apply()
+
       HttpResponse(status = StatusCodes.OK)
     }
     else {
       HttpResponse(status = StatusCodes.InternalServerError, entity = """["Invalid Input Supplied to Server for Purchase"]""")
     }
   }
-
 }
 
 object Start {
   implicit val system = ActorSystem()
 
   def main(args: Array[String]): Unit = {
-
-
     if(args.length != 1) {
       println("Specify Port")
     }
