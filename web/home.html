@@ -14,10 +14,11 @@
 					const date = validateDate(dateIn);
 
 					if(validateValue(value) && category) { 
-						$.post('purchase', {
+						$.post('/purchase', {
 							'value':"value", value, 
 							'category':category, 
 							'name':name, 
+							'account': 'checking',
 							'date': date
 						}, 
 						function(data, status, hahah) {
@@ -26,13 +27,12 @@
 						})
 						.fail(function() {
 							const body = arguments[0];
-							const errs = JSON.parse(body["responseText"])
+							const errs = JSON.parse(body["responseText"]);
 							errs.map(
 								function(error) {
 									console.log("error: " + error);
 								}
 							);
-
 						}); 
 					}
 					else {
@@ -41,17 +41,16 @@
 					}
 					return false;
 				});
-
 			}
 
 			function validateDate(date) {
 				const match = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
 				if(match && match.length == 3) {
-					return new Date(match[1], match[2], match[3]);
+					return new Date(match[1], match[2], match[3]).getTime();
 				}
 				else {
-					return new Date();
+					return new Date().getTime();
 				}
 			}
 
@@ -78,21 +77,6 @@
 
 			.form .submit {
 				background-color: rgb(200, 200, 200);
-			}
-
-			.form .submit:hover {
-				background-color: rgb(100,100,255);
-				transition: background-color
-				-webkit-transform: rotate(360deg);
-  				transform: rotate(360deg);
-  				transition-duration: 2s;
-			}
-
-			.form .dropdown:hover {
-				transition: background-color
-				-webkit-transform: rotate(360deg);
-  				transform: rotate(360deg);
-  				transition-duration: 2s;
 			}
 
 			.form .label {

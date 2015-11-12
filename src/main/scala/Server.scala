@@ -8,6 +8,8 @@ import akka.io.IO
 import spray.can.Http
 import spray.http._
 
+import java.util.Date
+
 import scalikejdbc._
 import scalikejdbc.config._
 
@@ -22,7 +24,6 @@ trait ServerGlobal {
 }
 
 class Server(port: Int) extends Actor with ActorLogging {
-
   override def receive: Receive = {
     case _: Http.Connected ⇒ {
       val serveActor = Start.system.actorOf(Props(new ServerRequest))
@@ -44,10 +45,8 @@ class ServerRequest extends Actor with ServerGlobal {
   Class.forName("com.mysql.jdbc.Driver")
 
   override def receive: Receive = {
-
     case HttpRequest(HttpMethods.GET, Uri.Path(`route_home`), _, _, _) ⇒ {
       sender ! serveGet(`route_home`)
-
     }
     case HttpRequest(HttpMethods.GET, Uri.Path(`route_history`), _, _, _) ⇒ {
       sender ! serveGet(`route_history`)
@@ -115,13 +114,28 @@ class ServerRequest extends Actor with ServerGlobal {
       &&
       m.exists{case(k, _) ⇒ k == "name"}
       &&
+      m.exists{case(k, _) ⇒ k == "account"}
+      &&
       m.exists{case(k, _) ⇒ k == "date"}
     ) {
       val value = m("value").toFloat
       val category = m("category")
       val name = m("name")
-      val date = m("date")
+      val account = m("account")
+      val dateLong = m("date").toLong
+      val date = new Date(dateLong)
+      val c = Database.Purchase.column
 
+      updateAccount(value, account)
+      updateCategoryAndGet(value, category)
+
+      withSQL {
+        insert.into(Database.Purchase).namedValues(
+          c.value -> value,
+          c.details -> name,
+          c.date -> date
+        )
+      }.update().apply()
 
 
       HttpResponse(status = StatusCodes.OK)
@@ -129,6 +143,39 @@ class ServerRequest extends Actor with ServerGlobal {
     else {
       HttpResponse(status = StatusCodes.InternalServerError, entity = """["Invalid Input Supplied to Server for Purchase"]""")
     }
+  }
+
+  def updateCategoryAndGet(value: Float, name: String): Option[Int] = {
+    val category = Database.Category.syntax
+    val c = Database.Category.column
+    var id: Option[Int] = None
+
+    withSQL {
+      select.from(Database.Category as category).where.eq(c.name, name)
+    }.map { rs ⇒
+      withSQL {
+        update(Database.Category).set(
+          c.balance -> (rs.float(category.resultName.balance) - value)
+        )
+      }.update().apply()
+      id = Some(rs.int(category.resultName.id))
+    }.list().apply()
+    id
+  }
+
+  def updateAccount(diff: Float, name: String): Unit = {
+    val account = Database.Account.syntax
+    val c = Database.Account.column
+
+    withSQL {
+      select.from(Database.Account as account).where.eq(c.name, name)
+    }.map { rs ⇒
+      withSQL {
+        update(Database.Account).set(
+          c.balance -> (rs.float(account.resultName.balance) - diff)
+        ).where.eq(account.id, rs.int(account.resultName.id))
+      }.update().apply()
+    }.list().apply()
   }
 }
 
@@ -141,7 +188,6 @@ object Start {
     }
     else {
       val listenPort = args(0).toInt
-
       val actor = system.actorOf(Props(new Server(listenPort)))
       IO(Http) ! Http.Bind(actor, interface = "localhost", port = listenPort)
     }

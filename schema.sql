@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS category;
 CREATE TABLE category(
     id INTEGER AUTO_INCREMENT NOT NULL,
     name VARCHAR(255),
+    balance FLOAT,
     budget FLOAT,
     PRIMARY KEY(id)
 );
@@ -42,3 +43,8 @@ CREATE TABLE purchase (
   PRIMARY KEY (id),
   FOREIGN KEY(category) REFERENCES category(id)
 );
+
+INSERT INTO account(name,balance,description) VALUES('checking', 5000.0, 'Jonathan Hamm\'s Checking Account');
+INSERT INTO account(name,balance,description) VALUES('savings', 650.0, 'Jonathan Hamm\'s Savings Account');
+
+INSERT INTO category(name,balance,budget) VALUES('food', 0, 5000)

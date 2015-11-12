@@ -45,20 +45,22 @@ object Database {
     override val tableName = "account"
     def apply(g: ResultName[Account])(rs: WrappedResultSet): Account = {
       new Account(
-        rs.int(g.id), rs.string(g.name),
-        rs.float(g.balance), rs.string(g.description)
+        id = rs.int(g.id), name = rs.string(g.name),
+        balance = rs.float(g.balance), description = rs.string(g.description)
       )
     }
   }
 
   case class Category( id: Int,
                        name: String,
+                       balance: Float,
                        budget: Float)
   object Category extends SQLSyntaxSupport[Category] {
     override val tableName = "category"
     def apply(g: ResultName[Category])(rs: WrappedResultSet): Category = {
       new Category(
-        rs.int(g.id), rs.string(g.name), rs.float(g.budget)
+        rs.int(g.id), rs.string(g.name),
+        rs.float(g.balance), rs.float(g.budget)
       )
     }
   }
