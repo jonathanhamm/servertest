@@ -125,19 +125,16 @@ class ServerRequest extends Actor with ServerGlobal {
       val dateLong = m("date").toLong
       val date = new Date(dateLong)
       val c = Database.Purchase.column
-
-      updateAccount(value, account)
-      updateCategoryAndGet(value, category)
+      val aID = updateAccountAndGet(value, account)
+      val cID = updateCategoryAndGet(value, category)
 
       withSQL {
         insert.into(Database.Purchase).namedValues(
-          c.value -> value,
-          c.details -> name,
+          c.value -> value, c.account -> aID,
+          c.category -> cID, c.details -> name,
           c.date -> date
         )
       }.update().apply()
-
-
       HttpResponse(status = StatusCodes.OK)
     }
     else {
@@ -145,10 +142,10 @@ class ServerRequest extends Actor with ServerGlobal {
     }
   }
 
-  def updateCategoryAndGet(value: Float, name: String): Option[Int] = {
+  def updateCategoryAndGet(value: Float, name: String): Int = {
     val category = Database.Category.syntax
     val c = Database.Category.column
-    var id: Option[Int] = None
+    var id: Int = 0
 
     withSQL {
       select.from(Database.Category as category).where.eq(c.name, name)
@@ -158,14 +155,15 @@ class ServerRequest extends Actor with ServerGlobal {
           c.balance -> (rs.float(category.resultName.balance) - value)
         )
       }.update().apply()
-      id = Some(rs.int(category.resultName.id))
+      id = rs.int(category.resultName.id)
     }.list().apply()
     id
   }
 
-  def updateAccount(diff: Float, name: String): Unit = {
+  def updateAccountAndGet(diff: Float, name: String): Int = {
     val account = Database.Account.syntax
     val c = Database.Account.column
+    var id: Int = 0
 
     withSQL {
       select.from(Database.Account as account).where.eq(c.name, name)
@@ -175,13 +173,14 @@ class ServerRequest extends Actor with ServerGlobal {
           c.balance -> (rs.float(account.resultName.balance) - diff)
         ).where.eq(account.id, rs.int(account.resultName.id))
       }.update().apply()
+      id = rs.int(account.resultName.id)
     }.list().apply()
+    id
   }
 }
 
 object Start {
   implicit val system = ActorSystem()
-
   def main(args: Array[String]): Unit = {
     if(args.length != 1) {
       println("Specify Port")
@@ -191,7 +190,6 @@ object Start {
       val actor = system.actorOf(Props(new Server(listenPort)))
       IO(Http) ! Http.Bind(actor, interface = "localhost", port = listenPort)
     }
-
     DBs.closeAll()
   }
 }
