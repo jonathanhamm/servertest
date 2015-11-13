@@ -91,9 +91,9 @@ class ServerRequest extends Actor with ServerGlobal {
   }
 
   def urlFormEncodeToMap(data: String): Map[String,String] = {
-    println("data: " + data)
     data.split("&").map { prop ⇒
       val p = prop.split("=")
+
       if(p.length == 2) {
         p(0) -> p(1)
       }

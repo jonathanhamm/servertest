@@ -1,4 +1,3 @@
-SET GLOBAL event_scheduler = 1;
 DROP DATABASE IF EXISTS finance_dev;
 CREATE DATABASE finance_dev;
 USE finance_dev;
@@ -26,6 +25,7 @@ CREATE TABLE category_budget(
   balance FLOAT,
   budget FLOAT,
   category INTEGER,
+  iteration INTEGER,
   PRIMARY KEY(id),
   FOREIGN KEY(category) REFERENCES category(id)
 );
@@ -56,17 +56,21 @@ CREATE TABLE purchase (
 );
 
 DELIMITER //
+
+DROP PROCEDURE IF EXISTS update_category_budget //
 CREATE PROCEDURE update_category_budget()
   BEGIN
-    INSERT INTO category_budget(start,balance,budget,category)
-      (SELECT NOW()) UNION (SELECT 0.0) UNION
-        (SELECT budget, category FROM category_budget WHERE start=(
-          SELECT MAX(start) FROM category_budget
-        )
-      );
-  END//
 
-DELIMITER //
+    SELECT * FROM category_budget JOIN category ON category.id = category_budget.category;
+
+    INSERT INTO category_budget(start,balance,budget,category)
+      (SELECT NOW(), 0.0, budget, category FROM category_budget WHERE start=(
+        SELECT MAX(start) FROM category_budget
+      ));
+  END
+  //
+
+DROP PROCEDURE IF EXISTS check_time //
 CREATE PROCEDURE check_time()
   BEGIN
     DECLARE q DATE;
@@ -76,15 +80,23 @@ CREATE PROCEDURE check_time()
     IF q IS NULL OR q < (DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)) THEN
       CALL update_category_budget();
     END IF;
-  END//
+  END
+  //
 
+DROP EVENT IF EXISTS update_category_budget_event //
 CREATE EVENT update_category_budget_event
-  ON SCHEDULE EVERY '1' MINUTE STARTS NOW() DO
+  ON SCHEDULE EVERY '1' SECOND STARTS NOW() DO
   BEGIN
     call update_category_budget();
-  END;
+  END
+  //
+
+DELIMITER ;
 
 INSERT INTO account(name,balance,description) VALUES('checking', 5000.0, 'Jonathan Hamm\'s Checking Account');
 INSERT INTO account(name,balance,description) VALUES('savings', 650.0, 'Jonathan Hamm\'s Savings Account');
+
+SET GLOBAL event_scheduler = 1;
+
 
 #INSERT INTO category(name,balance,budget) VALUES('food', 0, 5000)
