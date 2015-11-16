@@ -128,6 +128,13 @@ class ServerRequest extends Actor with ServerGlobal {
       val aID = updateAccountAndGet(value, account)
       val cID = updateCategoryAndGet(value, category)
 
+      val categoryBudget = getLatestCategoryBudget(category)
+
+      categoryBudget match {
+        case Some(b) => println("budget: " + b.budget)
+        case _ => println("empty query")
+      }
+
       withSQL {
         insert.into(Database.Purchase).namedValues(
           c.value -> value, c.account -> aID,
@@ -142,13 +149,19 @@ class ServerRequest extends Actor with ServerGlobal {
     }
   }
 
-  /*def getLatestCategoryBudget(name: String): Database.CategoryBudget = {
+  def getLatestCategoryBudget(name: String): Option[Database.CategoryBudget] = {
     val categoryBudget = Database.CategoryBudget.syntax
-    val c = Database.CategoryBudget.column
-    withSQL {
-      select(categoryBudget.result.id).from(Database.CategoryBudget as categoryBudget)
-    }.list().apply()
-  }*/
+    val category = Database.Category.syntax
+
+    val results = withSQL {
+      select.from(Database.CategoryBudget as categoryBudget)
+        .join(Database.Category as category)
+        .on(category.id, categoryBudget.category)
+    }.map(Database.CategoryBudget(categoryBudget.resultName))
+      .list().apply()
+
+    Option(results.maxBy(_.start))
+  }
 
   def updateCategoryAndGet(value: Float, name: String): Int = {
     /*val category = Database.Category.syntax
