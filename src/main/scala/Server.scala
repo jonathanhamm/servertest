@@ -142,8 +142,16 @@ class ServerRequest extends Actor with ServerGlobal {
     }
   }
 
+  /*def getLatestCategoryBudget(name: String): Database.CategoryBudget = {
+    val categoryBudget = Database.CategoryBudget.syntax
+    val c = Database.CategoryBudget.column
+    withSQL {
+      select(categoryBudget.result.id).from(Database.CategoryBudget as categoryBudget)
+    }.list().apply()
+  }*/
+
   def updateCategoryAndGet(value: Float, name: String): Int = {
-    val category = Database.Category.syntax
+    /*val category = Database.Category.syntax
     val c = Database.Category.column
     var id: Int = 0
 
@@ -157,11 +165,12 @@ class ServerRequest extends Actor with ServerGlobal {
       }.update().apply()
       id = rs.int(category.resultName.id)
     }.list().apply()
-    id
+    id*/
+    0
   }
 
   def updateAccountAndGet(diff: Float, name: String): Int = {
-    val account = Database.Account.syntax
+    /*val account = Database.Account.syntax
     val c = Database.Account.column
     var id: Int = 0
 
@@ -175,7 +184,8 @@ class ServerRequest extends Actor with ServerGlobal {
       }.update().apply()
       id = rs.int(account.resultName.id)
     }.list().apply()
-    id
+    id*/
+    0
   }
 }
 

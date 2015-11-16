@@ -52,12 +52,28 @@ object Database {
   }
 
   case class Category( id: Int,
-                       name: String )
+                       parent_id: Int,
+                       name: String,
+                       active: Boolean)
   object Category extends SQLSyntaxSupport[Category] {
     override val tableName = "category"
     def apply(g: ResultName[Category])(rs: WrappedResultSet): Category = {
       new Category(
-        rs.int(g.id), rs.string(g.name)
+        rs.int(g.id), rs.int(g.parent_id),
+        rs.string(g.name), rs.boolean(g.active)
+      )
+    }
+  }
+
+  case class CategoryChildren( id: Int,
+                               parent_id: Int,
+                               child_id: Int )
+  object CategoryChildren extends SQLSyntaxSupport[CategoryChildren] {
+    override val tableName = "category_children"
+    def apply(g: ResultName[CategoryChildren])(rs: WrappedResultSet): CategoryChildren = {
+      new CategoryChildren(
+        rs.int(g.id), rs.int(g.parent_id),
+        rs.int(g.child_id)
       )
     }
   }

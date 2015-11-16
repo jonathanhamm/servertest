@@ -14,9 +14,20 @@ CREATE TABLE account(
 DROP TABLE IF EXISTS category;
 CREATE TABLE category(
   id INTEGER AUTO_INCREMENT NOT NULL,
+  parent_id INTEGER,
   name VARCHAR(255),
   active BOOL DEFAULT TRUE,
   PRIMARY KEY(id)
+);
+
+DROP TABLE IF EXISTS category_children;
+CREATE TABLE category_children(
+  id INTEGER AUTO_INCREMENT NOT NULL,
+  parent_id INTEGER,
+  child_id INTEGER NOT NULL,
+  PRIMARY KEY(id),
+  FOREIGN KEY(child_id) REFERENCES category(id),
+  FOREIGN KEY(parent_id) REFERENCES category(id)
 );
 
 DROP TABLE IF EXISTS category_budget;
@@ -55,9 +66,9 @@ CREATE TABLE purchase (
   FOREIGN KEY(category) REFERENCES category(id)
 );
 
-DELIMITER //
+DELIMITER $
 
-DROP PROCEDURE IF EXISTS update_category_budget //
+DROP PROCEDURE IF EXISTS update_category_budget $
 CREATE PROCEDURE update_category_budget()
   BEGIN
     DECLARE iteration TIMESTAMP DEFAULT NOW();
@@ -69,10 +80,9 @@ CREATE PROCEDURE update_category_budget()
           SELECT MAX(start) FROM category_budget
         )
       );
-  END
-  //
+  END $
 
-DROP PROCEDURE IF EXISTS check_time //
+DROP PROCEDURE IF EXISTS check_time $
 CREATE PROCEDURE check_time()
   BEGIN
     DECLARE q TIMESTAMP;
@@ -82,16 +92,14 @@ CREATE PROCEDURE check_time()
     IF q IS NULL OR q < (DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)) THEN
       CALL update_category_budget();
     END IF;
-  END
-  //
+  END $
 
-DROP EVENT IF EXISTS update_category_budget_event //
+DROP EVENT IF EXISTS update_category_budget_event $
 CREATE EVENT update_category_budget_event
   ON SCHEDULE EVERY '1' SECOND STARTS NOW() DO
   BEGIN
     call check_time();
-  END
-  //
+  END $
 
 DELIMITER ;
 
