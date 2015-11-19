@@ -11,9 +11,10 @@ import scala.collection.JavaConversions._
 import scala.util.{Try, Success, Failure}
 
 object SSI extends ServerGlobal {
-  def include(src: String): String = {
+  def include(src: String, routineMap: Option[Map[String, () => String]] = None): String = {
     val doc = Jsoup.parse(src)
     val ssiIncludePattern = "\\s*#include\\s+file\\s*=\\s*\"([^\"]+)\"".r
+    val routineIncludePattern = "\\s*#include\\s+routine\\s*=\\s*\"([^\"]+)\"".r
 
     doc.getAllElements.foreach { e ⇒
       e.childNodes.filter(_.isInstanceOf[Comment]).zipWithIndex.foreach { case(n, i) ⇒
@@ -24,13 +25,24 @@ object SSI extends ServerGlobal {
               case Success(src) ⇒ {
                 val included = Jsoup.parse(src.mkString)
                 val root = included.select(":root").first()
-
                 comment.replaceWith(root)
               }
               case Failure(f) ⇒ {
                 println("fail: " + f.getMessage)
               }
             }
+          }
+          case routineIncludePattern(key) ⇒ {
+            val source = routineMap match {
+              case Some(rMap) =>
+                rMap.get(key) match {
+                  case Some(f) => f()
+                  case _ => "<p>ssi routine not found</p>"
+                }
+              case _ => "<p>ssi routine referenced but no map provided</p>"
+            }
+            val included = Jsoup.parseBodyFragment(source)
+            comment.replaceWith(included)
           }
           case _ ⇒ println("failed to match ssi include")
         }

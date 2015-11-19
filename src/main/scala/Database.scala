@@ -6,7 +6,7 @@ object Database {
   case class Purchase( id: Int,
                        value: Float,
                        account: Int,
-                       category: Int,
+                       category_budget: Int,
                        details: String,
                        date: Date)
   object Purchase extends SQLSyntaxSupport[Purchase] {
@@ -14,7 +14,7 @@ object Database {
     def apply(g: ResultName[Purchase])(rs: WrappedResultSet): Purchase = {
       new Purchase(
         rs.int(g.id), rs.float(g.value),
-        rs.int(g.account), rs.int(g.category),
+        rs.int(g.account), rs.int(g.category_budget),
         rs.string(g.details), rs.date(g.date)
       )
     }
@@ -63,6 +63,8 @@ object Database {
         rs.string(g.name), rs.boolean(g.active)
       )
     }
+    def apply(g: SyntaxProvider[Category])(rs: WrappedResultSet): Category = apply(g.resultName)(rs)
+
   }
 
   case class CategoryChildren( id: Int,

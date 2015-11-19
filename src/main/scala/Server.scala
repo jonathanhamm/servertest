@@ -15,6 +15,10 @@ import scalikejdbc.config._
 
 import scala.util.{Try, Success, Failure}
 
+case class CategoryData( joined: List[(Database.Category, Database.CategoryBudget)],
+                         children: List[Database.CategoryChildren])
+
+
 trait ServerGlobal {
   val root = "web"
 
@@ -37,6 +41,7 @@ class ServerRequest extends Actor with ServerGlobal {
   /* routes */
   val route_home = "/home.html"
   val route_history = "/history.html"
+  val route_plan = "/plan.html"
   val route_purchase = "/purchase"
 
   /* DB setup */
@@ -50,6 +55,9 @@ class ServerRequest extends Actor with ServerGlobal {
     }
     case HttpRequest(HttpMethods.GET, Uri.Path(`route_history`), _, _, _) ⇒ {
       sender ! serveGet(`route_history`)
+    }
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_plan`), _, _, _) ⇒ {
+      sender ! serveGet(`route_plan`)
     }
     case HttpRequest(HttpMethods.POST, Uri.Path(`route_purchase`), header, entity, _) ⇒ {
       header.find(_.name == "Content-Type").foreach{ h ⇒
@@ -126,23 +134,22 @@ class ServerRequest extends Actor with ServerGlobal {
       val date = new Date(dateLong)
       val c = Database.Purchase.column
       val aID = updateAccountAndGet(value, account)
-      val cID = updateCategoryAndGet(value, category)
 
-      val categoryBudget = getLatestCategoryBudget(category)
-
-      categoryBudget match {
-        case Some(b) => println("budget: " + b.budget)
-        case _ => println("empty query")
+      getLatestCategoryBudget(category) match {
+        case Some(cb) ⇒ {
+          withSQL {
+            insert.into(Database.Purchase).namedValues(
+              c.value -> value, c.account -> aID,
+              c.category_budget -> cb.id, c.details -> name,
+              c.date -> date
+            )
+          }.update().apply()
+          HttpResponse(status = StatusCodes.OK)
+        }
+        case _ ⇒ {
+          HttpResponse(status = StatusCodes.InternalServerError)
+        }
       }
-
-      withSQL {
-        insert.into(Database.Purchase).namedValues(
-          c.value -> value, c.account -> aID,
-          c.category -> cID, c.details -> name,
-          c.date -> date
-        )
-      }.update().apply()
-      HttpResponse(status = StatusCodes.OK)
     }
     else {
       HttpResponse(status = StatusCodes.InternalServerError, entity = """["Invalid Input Supplied to Server for Purchase"]""")
@@ -159,31 +166,11 @@ class ServerRequest extends Actor with ServerGlobal {
         .on(category.id, categoryBudget.category)
     }.map(Database.CategoryBudget(categoryBudget.resultName))
       .list().apply()
-
     Option(results.maxBy(_.start))
   }
 
-  def updateCategoryAndGet(value: Float, name: String): Int = {
-    /*val category = Database.Category.syntax
-    val c = Database.Category.column
-    var id: Int = 0
-
-    withSQL {
-      select.from(Database.Category as category).where.eq(c.name, name)
-    }.map { rs ⇒
-      withSQL {
-        update(Database.Category).set(
-          c.balance -> (rs.float(category.resultName.balance) - value)
-        )
-      }.update().apply()
-      id = rs.int(category.resultName.id)
-    }.list().apply()
-    id*/
-    0
-  }
-
   def updateAccountAndGet(diff: Float, name: String): Int = {
-    /*val account = Database.Account.syntax
+    val account = Database.Account.syntax
     val c = Database.Account.column
     var id: Int = 0
 
@@ -197,9 +184,56 @@ class ServerRequest extends Actor with ServerGlobal {
       }.update().apply()
       id = rs.int(account.resultName.id)
     }.list().apply()
-    id*/
-    0
+    id
   }
+
+
+  def queryCategoryData(): CategoryData = {
+    val category = Database.Category.syntax
+    val categoryBudget = Database.CategoryBudget.syntax
+
+    val joined = withSQL {
+      select.from(Database.Category as category).join(Database.CategoryBudget as categoryBudget)
+      .on(category.id, categoryBudget.category)
+    }.map{ rs =>
+      val cat = Database.Category(
+        rs.int(category.resultName.id),
+        rs.int(category.resultName.parent_id),
+        rs.string(category.resultName.name),
+        rs.boolean(category.resultName.active)
+      )
+      val catBud = Database.CategoryBudget(
+        rs.int(categoryBudget.resultName.id),
+        rs.date(categoryBudget.resultName.start),
+        rs.float(categoryBudget.resultName.balance),
+        rs.float(categoryBudget.resultName.budget),
+        rs.int(categoryBudget.resultName.category)
+      )
+      (cat, catBud)
+    }.list().apply()
+
+    val categoryChildren = Database.CategoryChildren.syntax
+    val children = withSQL {
+      select.from(Database.CategoryChildren as categoryChildren)
+    }.map{rs =>
+      Database.CategoryChildren(
+        rs.int(categoryChildren.id),
+        rs.int(categoryChildren.parent_id),
+        rs.int(categoryChildren.child_id)
+      )
+    }.list().apply()
+
+    new CategoryData(joined, children)
+  }
+
+  val prepareCategoryData = () => {
+    val data = queryCategoryData()
+    "haha"
+  }
+
+  val ssiRMap: Map[String, () => String] = Map(
+    "bob" -> prepareCategoryData
+  )
 }
 
 object Start {

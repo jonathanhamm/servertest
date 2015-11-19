@@ -47,7 +47,7 @@ CREATE TABLE income(
   value FLOAT,
   account INTEGER,
   source INTEGER,
-  date DATE,
+  date TIMESTAMP,
   period DATE,
   PRIMARY KEY(id),
   FOREIGN KEY(account) REFERENCES account(id)
@@ -58,12 +58,12 @@ CREATE TABLE purchase (
   id INTEGER AUTO_INCREMENT NOT NULL,
   value FLOAT,
   account INTEGER,
-  category INTEGER,
+  category_budget INTEGER,
   details TEXT,
-  date DATE,
+  date TIMESTAMP,
   PRIMARY KEY (id),
   FOREIGN KEY(account) REFERENCES account(id),
-  FOREIGN KEY(category) REFERENCES category(id)
+  FOREIGN KEY(category_budget) REFERENCES category_budget(id)
 );
 
 DELIMITER $
@@ -72,7 +72,6 @@ DROP PROCEDURE IF EXISTS update_category_budget $
 CREATE PROCEDURE update_category_budget()
   BEGIN
     DECLARE iteration TIMESTAMP DEFAULT NOW();
-
     INSERT INTO category_budget(start,balance,budget,category)
       (SELECT iteration, 0.0, budget, category FROM category_budget
         JOIN category ON (category.active IS TRUE AND category.id = category_budget.category)
@@ -108,6 +107,7 @@ INSERT INTO account(name,balance,description) VALUES('savings', 650.0, 'Jonathan
 
 INSERT INTO category(name,active) VALUES('BOB', TRUE);
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 500.0, 1);
+INSERT INTO category_budget(start,balance,budget,category) VALUES('2017-09-05 00:00:00', 0.0, 300.0, 1);
 
 SET GLOBAL event_scheduler = 1;
 
