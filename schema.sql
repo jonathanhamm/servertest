@@ -106,8 +106,22 @@ INSERT INTO account(name,balance,description) VALUES('checking', 5000.0, 'Jonath
 INSERT INTO account(name,balance,description) VALUES('savings', 650.0, 'Jonathan Hamm\'s Savings Account');
 
 INSERT INTO category(name,active) VALUES('BOB', TRUE);
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 500.0, 1);
-INSERT INTO category_budget(start,balance,budget,category) VALUES('2017-09-05 00:00:00', 0.0, 300.0, 1);
+INSERT INTO category(name,active) VALUES('asdf', TRUE);
+INSERT INTO category(name,active) VALUES('q3r', TRUE);
+INSERT INTO category(name,active) VALUES('2314', TRUE);
+INSERT INTO category(name,active) VALUES('qwer', TRUE);
+INSERT INTO category(name,active) VALUES('qwerdi', TRUE);
+INSERT INTO category(name,active) VALUES('derrp', TRUE);
+
+
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 500.0, (SELECT id FROM category WHERE name='BOB'));
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='asdf'));
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='q3r'));
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='2314'));
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='qwer'));
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='qwerdi'));
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='derrp'));
+
 
 SET GLOBAL event_scheduler = 1;
 

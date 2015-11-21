@@ -7,17 +7,10 @@ import akka.actor.{ActorLogging, Props, Actor, ActorSystem}
 import akka.io.IO
 import spray.can.Http
 import spray.http._
-
 import java.util.Date
-
 import scalikejdbc._
 import scalikejdbc.config._
-
 import scala.util.{Try, Success, Failure}
-
-case class CategoryData( joined: List[(Database.Category, Database.CategoryBudget)],
-                         children: List[Database.CategoryChildren])
-
 
 trait ServerGlobal {
   val root = "web"
@@ -73,7 +66,7 @@ class ServerRequest extends Actor with ServerGlobal {
     }
     case HttpRequest(method, unknown, _, _, _) ⇒ {
       println(s"404: ${method.toString()} : ${unknown.toString()} not found")
-      sender ! HttpResponse(status = StatusCodes.NotFound)
+      sender ! make404()
     }
     case x ⇒ {
       println("x: " + x)
@@ -84,7 +77,7 @@ class ServerRequest extends Actor with ServerGlobal {
     readPage(route) match {
       case Success(buffer) ⇒ {
         val body = buffer.mkString
-        val included = SSI.include(body)
+        val included = SSI.include(body, Some(ssiRMap))
         HttpResponse(
           entity = HttpEntity(MediaTypes.`text/html`, included)
         ).withHeaders(List(
@@ -93,7 +86,7 @@ class ServerRequest extends Actor with ServerGlobal {
       }
       case Failure(f) ⇒ {
         println("read failed: " + f.getMessage)
-        HttpResponse(status = StatusCodes.NotFound)
+        make404()
       }
     }
   }
@@ -156,10 +149,21 @@ class ServerRequest extends Actor with ServerGlobal {
     }
   }
 
+  def make404(): HttpResponse = {
+    val responseEntity = readPage("/404.html") match {
+      case Success(buffer) => SSI.include(buffer.mkString)
+      case _ => "404 Not Found, AND FAILED TO READ THE 404 FILE. SUPER FAIL"
+    }
+
+    HttpResponse(
+      entity = HttpEntity(MediaTypes.`text/html`, responseEntity),
+      status = StatusCodes.NotFound
+    )
+  }
+
   def getLatestCategoryBudget(name: String): Option[Database.CategoryBudget] = {
     val categoryBudget = Database.CategoryBudget.syntax
     val category = Database.Category.syntax
-
     val results = withSQL {
       select.from(Database.CategoryBudget as categoryBudget)
         .join(Database.Category as category)
@@ -195,10 +199,10 @@ class ServerRequest extends Actor with ServerGlobal {
     val joined = withSQL {
       select.from(Database.Category as category).join(Database.CategoryBudget as categoryBudget)
       .on(category.id, categoryBudget.category)
-    }.map{ rs =>
+    }.map{ rs ⇒
       val cat = Database.Category(
         rs.int(category.resultName.id),
-        rs.int(category.resultName.parent_id),
+        rs.intOpt(category.resultName.parent_id),
         rs.string(category.resultName.name),
         rs.boolean(category.resultName.active)
       )
@@ -211,27 +215,27 @@ class ServerRequest extends Actor with ServerGlobal {
       )
       (cat, catBud)
     }.list().apply()
-
+    
     val categoryChildren = Database.CategoryChildren.syntax
-    val children = withSQL {
+    val childMap = collection.mutable.HashMap[Int, (Int, Int)]()
+
+    withSQL {
       select.from(Database.CategoryChildren as categoryChildren)
-    }.map{rs =>
-      Database.CategoryChildren(
-        rs.int(categoryChildren.id),
-        rs.int(categoryChildren.parent_id),
-        rs.int(categoryChildren.child_id)
-      )
+    }.map{rs ⇒
+      val key = rs.int(categoryChildren.id)
+      val parent = rs.int(categoryChildren.parent_id)
+      val child = rs.int(categoryChildren.child_id)
+      childMap += (key -> (parent, child))
     }.list().apply()
-
-    new CategoryData(joined, children)
+    new CategoryData(joined, childMap)
   }
 
-  val prepareCategoryData = () => {
-    val data = queryCategoryData()
-    "haha"
+  val prepareCategoryData = () ⇒ {
+    val tree = new CategoryTree(queryCategoryData())
+    s"<script>${tree.toJsonString()}</script>"
   }
 
-  val ssiRMap: Map[String, () => String] = Map(
+  val ssiRMap: Map[String, () ⇒ String] = Map(
     "bob" -> prepareCategoryData
   )
 }
