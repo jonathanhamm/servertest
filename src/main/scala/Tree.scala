@@ -38,10 +38,16 @@ class CategoryTree(data: CategoryData) {
   }
 
   def toJsonString(): String = {
-    subTrees.map(genJSONSubTreeString).mkString("[", ",", "]")
+    subTrees.filter{t => t.parent match {
+      case Some(_) => true
+      case _ => false
+    }}.map(genJSONSubTreeString).mkString("[", ",", "]")
   }
 
   def genJSONSubTreeString(root: CategoryTreeNode): String = {
+
+    
+
     println("name: " + root.name)
     s"'${root.name}'"
   }
