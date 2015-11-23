@@ -215,7 +215,7 @@ class ServerRequest extends Actor with ServerGlobal {
       )
       (cat, catBud)
     }.list().apply()
-    
+
     val categoryChildren = Database.CategoryChildren.syntax
     val childMap = collection.mutable.HashMap[Int, (Int, Int)]()
 
@@ -232,11 +232,11 @@ class ServerRequest extends Actor with ServerGlobal {
 
   val prepareCategoryData = () ⇒ {
     val tree = new CategoryTree(queryCategoryData())
-    s"<script>${tree.toJsonString()}</script>"
+    s"<script>var cData=${tree.toJsonString()}</script>"
   }
 
   val ssiRMap: Map[String, () ⇒ String] = Map(
-    "bob" -> prepareCategoryData
+    "fetchCategoryData" -> prepareCategoryData
   )
 }
 

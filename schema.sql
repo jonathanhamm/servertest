@@ -106,12 +106,12 @@ INSERT INTO account(name,balance,description) VALUES('checking', 5000.0, 'Jonath
 INSERT INTO account(name,balance,description) VALUES('savings', 650.0, 'Jonathan Hamm\'s Savings Account');
 
 INSERT INTO category(name,active) VALUES('BOB', TRUE);
-INSERT INTO category(name,active) VALUES('asdf', TRUE);
-INSERT INTO category(name,active) VALUES('q3r', TRUE);
-INSERT INTO category(name,active) VALUES('2314', TRUE);
-INSERT INTO category(name,active) VALUES('qwer', TRUE);
-INSERT INTO category(name,active) VALUES('qwerdi', TRUE);
-INSERT INTO category(name,active) VALUES('derrp', TRUE);
+INSERT INTO category(parent_id,name,active) VALUES(1, 'asdf', TRUE);
+INSERT INTO category(parent_id,name,active) VALUES(1, 'q3r', TRUE);
+INSERT INTO category(parent_id,name,active) VALUES(2, '2314', TRUE);
+INSERT INTO category(parent_id,name,active) VALUES(2, 'qwer', TRUE);
+INSERT INTO category(parent_id,name,active) VALUES(3, 'qwerdi', TRUE);
+INSERT INTO category(parent_id,name,active) VALUES(4, 'derrp', TRUE);
 
 
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 500.0, (SELECT id FROM category WHERE name='BOB'));

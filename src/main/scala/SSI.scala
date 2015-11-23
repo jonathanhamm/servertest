@@ -19,7 +19,6 @@ object SSI extends ServerGlobal {
     doc.getAllElements.foreach { e ⇒
       e.childNodes.filter(_.isInstanceOf[Comment]).zipWithIndex.foreach { case(n, i) ⇒
         val comment = n.asInstanceOf[Comment]
-        println("matching:" + comment.getData)
         comment.getData match {
           case ssiIncludePattern(fileName) ⇒ {
             readPage(fileName) match {
