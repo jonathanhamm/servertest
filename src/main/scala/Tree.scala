@@ -1,4 +1,3 @@
-
 /**
  * Created by jonathanh on 11/20/15.
  */
@@ -6,8 +5,7 @@
 case class CategoryData( joined: List[(Database.Category, Database.CategoryBudget)],
                          children: collection.mutable.Map[Int, (Int, Int)])
 
-case class CategoryTreeNode(id: Int, parent: Option[Int], name: String) {
-  var list = collection.mutable.ListBuffer[Database.CategoryBudget]()
+case class CategoryTreeNode(id: Int, parent: Option[Int], name: String, list: Seq[Database.CategoryBudget]) {
   var children = collection.mutable.ListBuffer[CategoryTreeNode]()
 
   def addChild(child: CategoryTreeNode): Unit = {
@@ -20,35 +18,41 @@ case class CategoryTreeNode(id: Int, parent: Option[Int], name: String) {
 }
 
 class CategoryTree(data: CategoryData) {
-  var subTrees: List[CategoryTreeNode] = Nil
+  var subTrees: List[CategoryTreeNode] = init()
 
-  init()
-
-  def init(): Unit = {
-    val groups = data.joined
-              .groupBy{ case(category, _) => category.id}
+  def init(): List[CategoryTreeNode] = {
+    val groups = data.joined.groupBy{ case(category, _) => category.id}
     subTrees = groups.map{ case(key, tuple) =>
       val (cat, _) = tuple.head
-      new CategoryTreeNode(key, cat.parent_id, cat.name)
+      val list = makeCategoryList(tuple)
+      new CategoryTreeNode(key, cat.parent_id, cat.name, list)
     }.toList
 
     subTrees.foreach { st =>
       st.getParent(subTrees).foreach(_.addChild(st))
     }
+    subTrees
   }
 
-  def toJsonString(): String = {
-    subTrees.filter{t => t.parent match {
-      case Some(_) => true
-      case _ => false
+  def makeCategoryList(list: List[(Database.Category, Database.CategoryBudget)]): Seq[Database.CategoryBudget] = {
+    list.map {
+      case (_, bud: Database.CategoryBudget) =>
+        new Database.CategoryBudget(bud.id, bud.start, bud.balance, bud.budget, bud.category)
+      case _ => null
+    }
+  }
+
+  def makeJsonString(): String = {
+    val turd = subTrees.filter{t => t.parent match {
+      case Some(_) => false
+      case _ => true
     }}.map(genJSONSubTreeString).mkString("[", ",", "]")
+    println("turd: " + turd)
+    turd
   }
 
   def genJSONSubTreeString(root: CategoryTreeNode): String = {
-
-    
-
-    println("name: " + root.name)
-    s"'${root.name}'"
+    s"{'${root.name}':${root.children.map(genJSONSubTreeString).mkString("[", ",", "]")}," +
+    s"'list':${root.list.map(_.toString).mkString("[", ",", "]")}}"
   }
 }

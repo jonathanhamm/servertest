@@ -232,7 +232,7 @@ class ServerRequest extends Actor with ServerGlobal {
 
   val prepareCategoryData = () ⇒ {
     val tree = new CategoryTree(queryCategoryData())
-    s"<script>var cData=${tree.toJsonString()}</script>"
+    s"<script>var cData=${tree.makeJsonString()}</script>"
   }
 
   val ssiRMap: Map[String, () ⇒ String] = Map(

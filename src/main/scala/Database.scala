@@ -84,7 +84,11 @@ object Database {
                              start: Date,
                              balance: Float,
                              budget: Float,
-                             category: Int)
+                             category: Int) {
+    override def toString: String = {
+      s"{'id':$id,'start':'$start','balance':$balance,'budget':$budget,'category':$category}"
+    }
+  }
   object CategoryBudget extends SQLSyntaxSupport[CategoryBudget] {
     override val tableName = "category_budget"
     def apply(g: ResultName[CategoryBudget])(rs: WrappedResultSet): CategoryBudget = {

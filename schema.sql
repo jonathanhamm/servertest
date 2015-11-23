@@ -115,6 +115,7 @@ INSERT INTO category(parent_id,name,active) VALUES(4, 'derrp', TRUE);
 
 
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 500.0, (SELECT id FROM category WHERE name='BOB'));
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW()+10, 0.0, 500.0, (SELECT id FROM category WHERE name='BOB'));
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='asdf'));
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='q3r'));
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='2314'));
