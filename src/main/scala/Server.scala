@@ -74,10 +74,11 @@ class ServerRequest extends Actor with ServerGlobal {
   }
 
   def serveGet(route: String): HttpResponse = {
+
     readPage(route) match {
       case Success(buffer) ⇒ {
         val body = buffer.mkString
-        val included = SSI.include(body, Some(ssiRMap))
+        val included = SSI.include(body, Some(ssiRMap)).toString
         HttpResponse(
           entity = HttpEntity(MediaTypes.`text/html`, included)
         ).withHeaders(List(
@@ -151,7 +152,7 @@ class ServerRequest extends Actor with ServerGlobal {
 
   def make404(): HttpResponse = {
     val responseEntity = readPage("/404.html") match {
-      case Success(buffer) => SSI.include(buffer.mkString)
+      case Success(buffer) => SSI.include(buffer.mkString).toString
       case _ => "404 Not Found, AND FAILED TO READ THE 404 FILE. SUPER FAIL"
     }
 

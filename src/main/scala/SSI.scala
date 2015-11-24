@@ -11,8 +11,11 @@ import scala.collection.JavaConversions._
 import scala.util.{Try, Success, Failure}
 
 object SSI extends ServerGlobal {
-  def include(src: String, routineMap: Option[Map[String, () => String]] = None): String = {
-    val doc = Jsoup.parse(src)
+
+  val maxDepth = 500
+
+  def include(src: String, routineMap: Option[Map[String, () => String]] = None, depth: Int = 0): Document = {
+    val doc = Jsoup.parseBodyFragment(src)
     val ssiIncludePattern = "\\s*#include\\s+file\\s*=\\s*\"([^\"]+)\"".r
     val routineIncludePattern = "\\s*#include\\s+routine\\s*=\\s*\"([^\"]+)\"".r
 
@@ -21,15 +24,23 @@ object SSI extends ServerGlobal {
         val comment = n.asInstanceOf[Comment]
         comment.getData match {
           case ssiIncludePattern(fileName) ⇒ {
-            readPage(fileName) match {
-              case Success(src) ⇒ {
-                val included = Jsoup.parse(src.mkString)
-                val root = included.select(":root").first()
-                comment.replaceWith(root)
+            if(depth <= maxDepth) {
+              readPage(fileName) match {
+                case Success(nSrc) ⇒ {
+                  val root = include(nSrc.mkString, routineMap, depth + 1)
+                    .select(":root").first()
+                  comment.replaceWith(root)
+                }
+                case Failure(f) ⇒ {
+                  println("fail: " + f.getMessage)
+                }
               }
-              case Failure(f) ⇒ {
-                println("fail: " + f.getMessage)
-              }
+            }
+            else {
+              val root = Jsoup.parseBodyFragment(
+                "<p>max include recursion depth exceeded, <b>yew long-legged motherfugger yew</b></p>"
+              ).select(":root").first()
+              comment.replaceWith(root)
             }
           }
           case routineIncludePattern(key) ⇒ {
@@ -39,7 +50,7 @@ object SSI extends ServerGlobal {
                   case Some(f) => f()
                   case _ => "<p>ssi routine not found</p>"
                 }
-              case _ => "<p>ssi routine referenced but no map provided</p>"
+              case _ => "<p>ssi routine referenced but no map provided, <b>yew long-legged motherfugger yew</b></p>"
             }
             val included = Jsoup.parseBodyFragment(source)
             comment.replaceWith(included.select(":root").first())
@@ -48,6 +59,6 @@ object SSI extends ServerGlobal {
         }
       }
     }
-    doc.toString
+    doc
   }
 }

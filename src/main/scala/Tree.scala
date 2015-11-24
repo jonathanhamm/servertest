@@ -27,7 +27,6 @@ class CategoryTree(data: CategoryData) {
       val list = makeCategoryList(tuple)
       new CategoryTreeNode(key, cat.parent_id, cat.name, list)
     }.toList
-
     subTrees.foreach { st =>
       st.getParent(subTrees).foreach(_.addChild(st))
     }
@@ -43,16 +42,15 @@ class CategoryTree(data: CategoryData) {
   }
 
   def makeJsonString(): String = {
-    val turd = subTrees.filter{t => t.parent match {
+    subTrees.filter{t => t.parent match {
       case Some(_) => false
       case _ => true
     }}.map(genJSONSubTreeString).mkString("[", ",", "]")
-    println("turd: " + turd)
-    turd
   }
 
   def genJSONSubTreeString(root: CategoryTreeNode): String = {
-    s"{'${root.name}':${root.children.map(genJSONSubTreeString).mkString("[", ",", "]")}," +
-    s"'list':${root.list.map(_.toString).mkString("[", ",", "]")}}"
+    s"""["${root.name}",""" +
+    s"""${root.list.map(_.toString).mkString("[", ",", "]")},""" +
+    s"""${root.children.map(genJSONSubTreeString).mkString("[", ",", "]")}]"""
   }
 }

@@ -2,10 +2,34 @@
 <html>
 	<head>
 		<title>Plan</title>
-	</head>
-	<body>
-		<!--#include file="/menu.html"-->
+        <!--#include file="/common.html"-->
         <!--#include routine="fetchCategoryData"-->
+
+        <script>
+            function catTreePreOrder(root, callback) {
+                root.forEach(function(node) {
+                    callback(node);
+                    var children=node[2];
+                    if(children && children.constructor == Array) {
+                        console.log("foreach on: " + children);
+
+                        children.forEach(function (child) {
+                            console.log("the child is: " + child);
+                            catTreePreOrder(child, callback);
+                        });
+                    }
+                });
+            }
+
+            catTreePreOrder(cData, function(node) {
+                console.log("cData: " + cData);
+                console.log("node: " + node);
+            });
+
+        </script>
+    </head>
+    <body>
+		<!--#include file="/menu.html"-->
 
         <p> hello son </p>
 	</body>
