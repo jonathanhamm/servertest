@@ -3,7 +3,7 @@
 	<head>
         <!--#include file="/common.html"-->
 
-		<script> 
+        <script>
 			function prepareSubmitPurchase() {
 				const submitPurchase = $('#submitPurchase');
 				submitPurchase.find('input[name=submit]').click(function() {
@@ -15,7 +15,7 @@
 
 					if(validateValue(value) && category) { 
 						$.post('/purchase', {
-							'value':"value", value, 
+							'value':value,
 							'category':category, 
 							'name':name, 
 							'account': 'checking',
@@ -66,26 +66,11 @@
 		</script>
 
 		<style>
-
-			body {
-				background-color: rgb(210,220,225)
-			}
-
-			.title {	
-				font-size: 120%;
-			}
-
-			.form .submit {
-				background-color: rgb(200, 200, 200);
-			}
-
-			.form .label {
-				display: inherit;
-			}
-
-			.col1, .col2 {
-				display: inline;
-			}
+			body {  background-color: rgb(210,220,225)  }
+			.title {  font-size: 120%;  }
+			.form .submit {  background-color: rgb(200, 200, 200);  }
+			.form .label {  display: inherit;  }
+			.col1, .col2 {  display: inline;  }
 
 			@media(max-width: 615px) {
 				.title {

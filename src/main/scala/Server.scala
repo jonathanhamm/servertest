@@ -192,7 +192,6 @@ class ServerRequest extends Actor with ServerGlobal {
     id
   }
 
-
   def queryCategoryData(): CategoryData = {
     val category = Database.Category.syntax
     val categoryBudget = Database.CategoryBudget.syntax
@@ -233,6 +232,7 @@ class ServerRequest extends Actor with ServerGlobal {
 
   val prepareCategoryData = () ⇒ {
     val tree = new CategoryTree(queryCategoryData())
+    println("data: " + tree.makeJsonString())
     s"<script>var cData=${tree.makeJsonString()}</script>"
   }
 

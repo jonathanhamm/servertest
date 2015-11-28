@@ -8,22 +8,22 @@
         <script>
             function catTreePreOrder(root, callback) {
                 root.forEach(function(node) {
-                    callback(node);
-                    var children=node[2];
-                    if(children && children.constructor == Array) {
-                        console.log("foreach on: " + children);
-
-                        children.forEach(function (child) {
-                            console.log("the child is: " + child);
-                            catTreePreOrder(child, callback);
-                        });
-                    }
+                    catTreePreOrder_r(node, callback);
                 });
             }
 
+            function catTreePreOrder_r(node, callback) {
+                callback(node);
+                var children=node[2];
+                if(children && children.constructor == Array) {
+                    children.forEach(function (child) {
+                        catTreePreOrder_r(child, callback);
+                    });
+                }
+            }
+
             catTreePreOrder(cData, function(node) {
-                console.log("cData: " + cData);
-                console.log("node: " + node);
+                console.log("name: " + node[0]);
             });
 
         </script>

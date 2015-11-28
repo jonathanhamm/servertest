@@ -27,9 +27,7 @@ class CategoryTree(data: CategoryData) {
       val list = makeCategoryList(tuple)
       new CategoryTreeNode(key, cat.parent_id, cat.name, list)
     }.toList
-    subTrees.foreach { st =>
-      st.getParent(subTrees).foreach(_.addChild(st))
-    }
+    subTrees.foreach {st => st.getParent(subTrees).foreach(_.addChild(st))}
     subTrees
   }
 
