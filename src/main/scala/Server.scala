@@ -74,7 +74,6 @@ class ServerRequest extends Actor with ServerGlobal {
   }
 
   def serveGet(route: String): HttpResponse = {
-
     readPage(route) match {
       case Success(buffer) ⇒ {
         val body = buffer.mkString

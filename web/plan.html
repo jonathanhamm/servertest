@@ -22,15 +22,32 @@
                 }
             }
 
-            catTreePreOrder(cData, function(node) {
-                console.log("name: " + node[0]);
-            });
+            function catTreeDiv(root) {
+                var rootDiv = $('#categoryList');
+                root.forEach(function(node) {
+                    var name = node[0];
+                    var nodeChildren = node[2];
+                    var nodeDiv = '<div class="categoryClass">'
+                                    +
+                                    '<div class="budget">' + node.budget + '</div>'
+                            + catTreeDiv_r(node) + '</div>';
+                    rootDiv.append(nodeDiv);
+                });
+            }
+
+            function catTreeDiv_r(node) {
+
+            }
 
         </script>
     </head>
     <body>
 		<!--#include file="/menu.html"-->
 
-        <p> hello son </p>
+        <div id="categoryList"></div>
+        <script>
+            console.log(cData);
+            catTreeDiv(cData);
+        </script>
 	</body>
 </html>

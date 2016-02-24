@@ -47,8 +47,8 @@ class CategoryTree(data: CategoryData) {
   }
 
   def genJSONSubTreeString(root: CategoryTreeNode): String = {
-    s"""["${root.name}",""" +
-    s"""${root.list.map(_.toString).mkString("[", ",", "]")},""" +
-    s"""${root.children.map(genJSONSubTreeString).mkString("[", ",", "]")}]"""
+    s"""{"${root.name}":""" +
+    s"""${root.list.map(_.toString).mkString}, children: """ +
+    s"""${root.children.map(genJSONSubTreeString).mkString("[", ",", "]")}}"""
   }
 }
