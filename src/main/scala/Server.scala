@@ -36,6 +36,9 @@ class ServerRequest extends Actor with ServerGlobal {
   val route_history = "/history.html"
   val route_plan = "/plan.html"
   val route_purchase = "/purchase"
+  val route_jquery = "/jquery/dist/jquery.min.js"
+  val route_tree = "/tree.js"
+  val route_tree_style = "/tree.css"
 
   /* DB setup */
   implicit val session = AutoSession
@@ -51,6 +54,15 @@ class ServerRequest extends Actor with ServerGlobal {
     }
     case HttpRequest(HttpMethods.GET, Uri.Path(`route_plan`), _, _, _) ⇒ {
       sender ! serveGet(`route_plan`)
+    }
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_jquery`), _, _, _) ⇒ {
+      sender ! serveGet(`route_jquery`)
+    }
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_tree`), _, _, _) ⇒ {
+      sender ! serveGet(`route_tree`)
+    }
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_tree_style`), _, _, _) ⇒ {
+      sender ! serveGet(`route_tree_style`)
     }
     case HttpRequest(HttpMethods.POST, Uri.Path(`route_purchase`), header, entity, _) ⇒ {
       header.find(_.name == "Content-Type").foreach{ h ⇒
@@ -76,10 +88,14 @@ class ServerRequest extends Actor with ServerGlobal {
   def serveGet(route: String): HttpResponse = {
     readPage(route) match {
       case Success(buffer) ⇒ {
+        val htmlPattern = "(.*\\.html?)$".r
         val body = buffer.mkString
-        val included = SSI.include(body, Some(ssiRMap)).toString
+        val payload = route match {
+          case htmlPattern(_) ⇒ SSI.include(body, Some(ssiRMap)).toString
+          case _ ⇒ body
+        }
         HttpResponse(
-          entity = HttpEntity(MediaTypes.`text/html`, included)
+          entity = HttpEntity(MediaTypes.`text/html`, payload)
         ).withHeaders(List(
           HttpHeaders.Connection("close")
         ))

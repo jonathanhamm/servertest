@@ -2,52 +2,32 @@
 <html>
 	<head>
 		<title>Plan</title>
+        <style>
+            .record {
+                padding-right: 10px;
+            }
+        </style>
         <!--#include file="/common.html"-->
         <!--#include routine="fetchCategoryData"-->
 
-        <script>
-            function catTreePreOrder(root, callback) {
-                root.forEach(function(node) {
-                    catTreePreOrder_r(node, callback);
-                });
-            }
-
-            function catTreePreOrder_r(node, callback) {
-                callback(node);
-                var children=node[2];
-                if(children && children.constructor == Array) {
-                    children.forEach(function (child) {
-                        catTreePreOrder_r(child, callback);
-                    });
-                }
-            }
-
-            function catTreeDiv(root) {
-                var rootDiv = $('#categoryList');
-                root.forEach(function(node) {
-                    var name = node[0];
-                    var nodeChildren = node[2];
-                    var nodeDiv = '<div class="categoryClass">'
-                                    +
-                                    '<div class="budget">' + node.budget + '</div>'
-                            + catTreeDiv_r(node) + '</div>';
-                    rootDiv.append(nodeDiv);
-                });
-            }
-
-            function catTreeDiv_r(node) {
-
-            }
-
-        </script>
     </head>
     <body>
 		<!--#include file="/menu.html"-->
+        <div class="item" id="item-prototype" hidden>
+            <div class="item-properties">
+                <div class="item-name"></div>
+                <div class="item-record">
+                    <div class="item-record-id"></div>
+                    <div class="item-record-start"></div>
+                    <div class="item-record-balance"></div>
+                    <div class="item-reccord-budget"></div>
+                    <div class="item-record-category"></div>
+                </div>
+            </div>
+        </div>
 
         <div id="categoryList"></div>
-        <script>
-            console.log(cData);
-            catTreeDiv(cData);
-        </script>
+        <script src="/tree.js"></script>
+        <script>Tree.Parse.divTree(cData);</script>
 	</body>
 </html>

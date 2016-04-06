@@ -5,7 +5,9 @@
 case class CategoryData( joined: List[(Database.Category, Database.CategoryBudget)],
                          children: collection.mutable.Map[Int, (Int, Int)])
 
-case class CategoryTreeNode(id: Int, parent: Option[Int], name: String, list: Seq[Database.CategoryBudget]) {
+case class CategoryTreeNode(id: Int, parent: Option[Int], name: String, list: Seq[Database.CategoryBudget]) extends Iterable[CategoryTreeNode] {
+  override def iterator = Iterator[CategoryTreeNode]()
+
   var children = collection.mutable.ListBuffer[CategoryTreeNode]()
 
   def addChild(child: CategoryTreeNode): Unit = {
@@ -13,14 +15,16 @@ case class CategoryTreeNode(id: Int, parent: Option[Int], name: String, list: Se
   }
 
   def getParent(subTrees: Iterable[CategoryTreeNode]): Option[CategoryTreeNode] = {
-    parent.flatMap( p => subTrees.find(n => p == n.id))
+    parent.flatMap( p => subTrees.find(_.id == p))
   }
 }
 
 class CategoryTree(data: CategoryData) {
-  var subTrees: List[CategoryTreeNode] = init()
+  var subTrees: List[CategoryTreeNode] = List.empty[CategoryTreeNode]
 
-  def init(): List[CategoryTreeNode] = {
+  init()
+
+  def init(): Unit = {
     val groups = data.joined.groupBy{ case(category, _) => category.id}
     subTrees = groups.map{ case(key, tuple) =>
       val (cat, _) = tuple.head
@@ -28,7 +32,6 @@ class CategoryTree(data: CategoryData) {
       new CategoryTreeNode(key, cat.parent_id, cat.name, list)
     }.toList
     subTrees.foreach {st => st.getParent(subTrees).foreach(_.addChild(st))}
-    subTrees
   }
 
   def makeCategoryList(list: List[(Database.Category, Database.CategoryBudget)]): Seq[Database.CategoryBudget] = {
@@ -47,8 +50,8 @@ class CategoryTree(data: CategoryData) {
   }
 
   def genJSONSubTreeString(root: CategoryTreeNode): String = {
-    s"""{"${root.name}":""" +
-    s"""${root.list.map(_.toString).mkString}, children: """ +
+    s"""{item: ["${root.name}",""" +
+    s"""${root.list.map(_.toString).mkString("[",",","]")}], "children": """ +
     s"""${root.children.map(genJSONSubTreeString).mkString("[", ",", "]")}}"""
   }
 }
