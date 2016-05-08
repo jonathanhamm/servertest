@@ -43,15 +43,21 @@ class CategoryTree(data: CategoryData) {
   }
 
   def makeJsonString(): String = {
-    subTrees.filter{t => t.parent match {
-      case Some(_) => false
-      case _ => true
-    }}.map(genJSONSubTreeString).mkString("[", ",", "]")
+    val generated = subTrees.filter(_.parent.isDefined)
+      .map(genJSONSubTreeString).mkString("[",",","]")
+    println("generated: " + generated)
+    generated
   }
 
   def genJSONSubTreeString(root: CategoryTreeNode): String = {
-    s"""{item: ["${root.name}",""" +
-    s"""${root.list.map(_.toString).mkString("[",",","]")}], "children": """ +
-    s"""${root.children.map(genJSONSubTreeString).mkString("[", ",", "]")}}"""
+    s"""{"item": "${root.name}",""" +
+    s"""${root.list.map(_.toString).mkString}""" + {
+      if (root.children.size > 0) {
+        s""","children":${root.children.map(genJSONSubTreeString).mkString("[", ",", "]")}}"""
+      }
+      else {
+        "}"
+      }
+    }
   }
 }

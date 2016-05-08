@@ -86,7 +86,7 @@ object Database {
                              budget: Float,
                              category: Int) {
     override def toString: String = {
-      s"""{"id":$id,"start":"$start","balance":$balance,"budget":$budget,"category":$category}"""
+      s""""id":$id,"start":"$start","balance":$balance,"budget":$budget,"category":$category"""
     }
   }
   object CategoryBudget extends SQLSyntaxSupport[CategoryBudget] {
