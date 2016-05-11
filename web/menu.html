@@ -25,7 +25,33 @@
 			}
 
 			#home-menu {
+                top: 0px;
+                left: 0px;
 				display: block;
+                position: fixed;
+                background-color: lightblue;
+                width: 100%;
 			}
 
 </style>
+<script>
+    var Menu =
+            Menu || {
+                addItem: function(text, link, style, styles) {
+                    var li = document.createElement("li");
+                    var a = document.createElement("a");
+                    var aText = document.createTextNode(text);
+
+                    a.appendChild(aText);
+                    li.appendChild(a);
+
+                    if(styles) {
+                        styles.forEach(function(pair){
+                            li.style[pair[0]] = pair[1];
+                        });
+                    }
+
+                    $("#home-menu > ul").append(li);
+                }
+            };
+</script>

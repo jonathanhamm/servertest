@@ -27,6 +27,11 @@
         </div>
 
         <div id="categoryRoot"></div>
+        <script>
+            var padding = 5;
+            var height = $("#home-menu").height();
+            $("#categoryRoot").css("margin-top", height + padding);
+        </script>
         <script src="/tree.js"></script>
         <script>Tree.Basic.generateList(cData);</script>
 	</body>
