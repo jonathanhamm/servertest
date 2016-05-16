@@ -67,14 +67,24 @@ class CategoryTree(data: CategoryData) {
 
   def emitJSONDeclarations(varMap: Map[String, (String, CategoryTreeNode)]): String = {
     val declarations = flatten.zipWithIndex.map{case (l, i) =>
-      s"""var _c$i={"item":"${l.name}",${l.list.head.toString}}"""
+      l.getParent(subTrees) match {
+        case Some(p) => {
+          val pVar = varMap(p.name) match {case(v, _) => v}
+          s"""var _c$i={"item":"${l.name}",${l.list.head.toString},"parent":$pVar}"""
+        }
+        case _ => s"""var _c$i={"item":"${l.name}",${l.list.head.toString}}"""
+      }
     }.mkString(";")
 
     val childAssign = varMap.map{ case(name, (varName, cat)) =>
-      val childList = cat.children.map{ c =>
-        varMap(c.name) match {case (n, _) => n}
-      }.mkString("[",",","]")
-      s"$varName.children=$childList"
+      if(cat.children.size > 0) {
+        cat.children.map { c =>
+          varMap(c.name) match {
+            case (n, _) => n
+          }
+        }.mkString(s"$varName.children=[", ",", "]")
+      }
+      else { "" }
     }.mkString(";")
 
     s"$declarations;$childAssign"
