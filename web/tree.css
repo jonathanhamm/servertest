@@ -1,0 +1,33 @@
+div.item-outer > .item-inner {
+    background-color: blue;
+    width: 20%;
+    border-style: inset;
+}
+
+div.item-outer > .item-inner > .record {
+    background-color: lightblue;
+    border: 2px;
+    border-color: black;
+    border-style: double;
+}
+
+.treenode-wrapper {
+    background-color: darkgrey;
+    display: table-cell;
+    border: 5px;
+    border-color: black;
+    border-style: double;
+}
+
+.node-property-input {
+    display: table-cell;
+}
+
+.node-property-label {
+    display: table-cell;
+}
+
+.node-property-wrapper {
+    display: block;
+    column-count: 2;
+}

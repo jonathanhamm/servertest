@@ -19,7 +19,6 @@ case class CategoryTreeNode(id: Int, parent: Option[Int], name: String, list: Se
   def getParent(subTrees: Iterable[CategoryTreeNode]): Option[CategoryTreeNode] = {
     parent.flatMap( p => subTrees.find(_.id == p))
   }
-
 }
 
 class CategoryTree(data: CategoryData) {
