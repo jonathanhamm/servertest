@@ -8,10 +8,10 @@ Tree.Basic = Tree.Basic || {
     generateList: function(data) {
         var _this = this;
         _this.data = data;
+        this._generateList(data, $("#categoryRoot")[0]);
         data.forEach(function(node){
             _this.validateSubtree(node);
         });
-        this._generateList(data, $("#categoryRoot")[0]);
     },
     _generateList: function(data, elRoot) {
         var _this = this;
@@ -33,6 +33,7 @@ Tree.Basic = Tree.Basic || {
         var _this = this;
         var wrapper = document.createElement("div");
         wrapper.classList.add("treenode-wrapper");
+        wrapper.setAttribute("id", "category-node-"+node.id);
 
         var addChild = document.createElement("button");
         addChild.setAttribute("type", "button");
@@ -88,22 +89,45 @@ Tree.Basic = Tree.Basic || {
     },
     validateSubtree: function(root) {
         var _this = this;
-
+        console.log("visited: " + root.item + " " + root.id);
         var children = root.children;
+        var elem = document.getElementById("category-node-" + root.id);
 
         if(children) {
             var accum = 0;
+
             children.forEach(function(child){
-                accum += child.budget;
                 _this.validateSubtree(child);
+                accum += child.budget;
             });
 
-            if(accum > root.budget) {
-                console.error("Sum of Children excedes budget for: " + root.item);
+            var diff = root.budget - accum;
+
+            console.log("diff: " + diff + " " + (diff > 0));
+
+            if(diff < 0) {
+                var deficit = document.createElement("div");
+                var deficitTxt = document.createTextNode("deficit: $" + (-diff));
+                deficit.appendChild(deficitTxt);
+                deficit.classList.add("category-node-deficit-div");
+                elem.insertBefore(deficit, elem.childNodes[0]);
+                elem.classList.add("category-node-deficit");
+            }
+            else if(diff > 0) {
+                console.log("got surplus: " + diff);
+                var surplus = document.createElement("div");
+                var surplusTxt = document.createTextNode("surplus: $" + diff);
+                surplus.appendChild(surplusTxt);
+                surplus.classList.add("category-node-surplus-div");
+                elem.insertBefore(surplus, elem.childNodes[0]);
+                elem.classList.add("category-node-surplus");
             }
             else {
-                console.log("in budget by: $" + (root.budget - accum));
+                elem.classList.add("category-node-balanced");
             }
+        }
+        else {
+            elem.classList.add("category-node-leaf");
         }
     },
     computeRemainder: function(child) {
@@ -117,7 +141,6 @@ Tree.Basic = Tree.Basic || {
     },
     treeToString: function() {
         function _treeToString(root) {
-
         }
     }
 };

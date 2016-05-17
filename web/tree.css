@@ -12,7 +12,6 @@ div.item-outer > .item-inner > .record {
 }
 
 .treenode-wrapper {
-    background-color: darkgrey;
     display: table-cell;
     border: 5px;
     border-color: black;
@@ -30,4 +29,36 @@ div.item-outer > .item-inner > .record {
 .node-property-wrapper {
     display: block;
     column-count: 2;
+}
+
+.category-node-deficit {
+    background-color: red;
+}
+
+.category-node-balanced {
+    background-color: lightblue;
+}
+
+.category-node-surplus {
+    background-color: green;
+}
+
+.category-node-leaf {
+    background-color: darkgray;
+}
+
+.category-node-deficit-div {
+    display: inline-block;
+    float: right;
+    font-size: 90%;
+    color: yellow;
+    margin-right: 2%;
+}
+
+.category-node-surplus-div {
+    display: inline-block;
+    float: right;
+    font-size: 90%;
+    color: lightblue;
+    margin-right: 2%;
 }

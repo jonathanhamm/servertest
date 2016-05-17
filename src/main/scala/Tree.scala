@@ -52,7 +52,7 @@ class CategoryTree(data: CategoryData) {
 
   def makeJsonString(): String = {
     val varMap = genVarMap()
-    val roots = subTrees.map{c =>
+    val roots = subTrees.filter(_.parent.isEmpty).map{c =>
       varMap(c.name) match {case (n, _) => n}
     }.mkString("[",",","]")
     s"${emitJSONDeclarations(varMap)};var cData=$roots;"
