@@ -107,22 +107,26 @@ Tree.Basic = Tree.Basic || {
 
             if(diff < 0) {
                 var deficit = document.createElement("div");
-                var deficitTxt = document.createTextNode("deficit: $" + (-diff));
+                var deficitTxt = document.createTextNode("Deficit: $" + (-diff));
                 deficit.appendChild(deficitTxt);
                 deficit.classList.add("category-node-deficit-div");
                 elem.insertBefore(deficit, elem.childNodes[0]);
                 elem.classList.add("category-node-deficit");
             }
             else if(diff > 0) {
-                console.log("got surplus: " + diff);
                 var surplus = document.createElement("div");
-                var surplusTxt = document.createTextNode("surplus: $" + diff);
+                var surplusTxt = document.createTextNode("Surplus: $" + diff);
                 surplus.appendChild(surplusTxt);
                 surplus.classList.add("category-node-surplus-div");
                 elem.insertBefore(surplus, elem.childNodes[0]);
                 elem.classList.add("category-node-surplus");
             }
             else {
+                var balanced = document.createElement("div");
+                var balancedTxt = document.createTextNode("Balanced");
+                balanced.appendChild(balancedTxt);
+                balanced.classList.add("category-node-balanced-div");
+                elem.insertBefore(balanced, elem.childNodes[0]);
                 elem.classList.add("category-node-balanced");
             }
         }

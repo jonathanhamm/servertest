@@ -47,18 +47,23 @@ div.item-outer > .item-inner > .record {
     background-color: darkgray;
 }
 
-.category-node-deficit-div {
+.category-node-deficit-div,
+.category-node-surplus-div,
+.category-node-balanced-div{
     display: inline-block;
     float: right;
     font-size: 90%;
-    color: yellow;
     margin-right: 2%;
 }
 
+.category-node-deficit-div {
+    color: yellow;
+}
+
 .category-node-surplus-div {
-    display: inline-block;
-    float: right;
-    font-size: 90%;
     color: lightblue;
-    margin-right: 2%;
+}
+
+.category-node-balanced-div {
+    color: darkblue;
 }
