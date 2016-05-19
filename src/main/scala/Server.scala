@@ -39,6 +39,7 @@ class ServerRequest extends Actor with ServerGlobal {
   val route_jquery = "/jquery/dist/jquery.min.js"
   val route_tree = "/tree.js"
   val route_tree_style = "/tree.css"
+  val route_new_category = "/new-category"
 
   /* DB setup */
   implicit val session = AutoSession
@@ -72,6 +73,23 @@ class ServerRequest extends Actor with ServerGlobal {
           }
           case mime ⇒ {
             println("unknown mime type: " + mime)
+          }
+        }
+      }
+    }
+    case HttpRequest(HttpMethods.POST, Uri.Path(`route_new_category`), _, entity, _) => {
+      if(entity.isEmpty) {
+        sender ! make400()
+      }
+      else {
+        val p = "parent=(\\d+)".r
+        sender ! {
+          entity.asString match {
+            case p(pID) => HttpResponse(
+              status = StatusCodes.OK,
+              entity = HttpEntity(makeNewCategory(pID.toInt))
+            )
+            case _ => make400()
           }
         }
       }
@@ -146,13 +164,13 @@ class ServerRequest extends Actor with ServerGlobal {
 
       getLatestCategoryBudget(category) match {
         case Some(cb) ⇒ {
-          withSQL {
+          applyUpdate {
             insert.into(Database.Purchase).namedValues(
               c.value -> value, c.account -> aID,
               c.category_budget -> cb.id, c.details -> name,
               c.date -> date
             )
-          }.update().apply()
+          }
           HttpResponse(status = StatusCodes.OK)
         }
         case _ ⇒ {
@@ -176,6 +194,8 @@ class ServerRequest extends Actor with ServerGlobal {
       status = StatusCodes.NotFound
     )
   }
+
+  def make400(): HttpResponse = HttpResponse(status = StatusCodes.BadRequest)
 
   def getLatestCategoryBudget(name: String): Option[Database.CategoryBudget] = {
     val categoryBudget = Database.CategoryBudget.syntax
@@ -243,6 +263,26 @@ class ServerRequest extends Actor with ServerGlobal {
       childMap += (key -> (parent, child))
     }.list().apply()
     new CategoryData(joined, childMap)
+  }
+
+  def makeNewCategory(pID: Int): String = {
+    val c = Database.Category.column
+
+    DB localTx { implicit session =>
+      applyUpdate {
+        insert.into(Database.Category).namedValues(
+          c.parent_id -> Some(pID),
+          c.name -> "test",
+          c.active -> true
+        )
+      }
+      sql"SELECT LAST_INSERT_ID()".map(r => r.int(1)).single().apply()
+    }
+    match {
+      case Some(id) =>
+        s"""{"id":$id,"item":"","parent":$pID,"start":"${new Date()}","balance":0,"budget":0,"category":$id}"""
+      case _ => ""
+    }
   }
 
   val prepareCategoryData = () ⇒ {

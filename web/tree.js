@@ -61,26 +61,17 @@ Tree.Basic = Tree.Basic || {
         newChild.setAttribute("type", "button");
         newChild.appendChild(newChildTxt);
         newChild.addEventListener("click", function() {
-            /*
-             var _c15 = {
-             "item": "qwerdi",
-             "id": 7,
-             "start": "2016-05-16",
-             "balance": 0.0,
-             "budget": 300.0,
-             "category": 6,
-             "parent": _c14
-             };
+            $.post("/new-category",{
+                "parent": node.id
+            }).done(function(data){
+                console.log("data: " + data);
 
-             */
-
-            _this._generateList([{}], li);
+                var parsedData = JSON.parse(data);
+                _this._generateList([parsedData], li);
+            });
         });
 
         wrapper.appendChild(newChild);
-
-
-
         return wrapper;
     },
     genNodeProperty: function (name, value, className, id) {
