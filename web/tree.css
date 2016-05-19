@@ -20,6 +20,13 @@ div.item-outer > .item-inner > .record {
 
 .node-property-input {
     display: table-cell;
+    float: right;
+    width: 100%;
+    border-style: solid;
+    margin-left: 20px;
+    border-radius: 3px;
+    margin-top: 10px;
+    background-color: lightgray;
 }
 
 .node-property-label {
@@ -29,41 +36,50 @@ div.item-outer > .item-inner > .record {
 .node-property-wrapper {
     display: block;
     column-count: 2;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
-.category-node-deficit {
-    background-color: red;
+.category-node-imbalance {
+    background-color: lightblue;
+    border-style: dotted ;
+    border-color: red;
 }
 
 .category-node-balanced {
     background-color: lightblue;
+    border-style: solid;
+    border-color: darkblue;
 }
 
 .category-node-surplus {
-    background-color: green;
+    background-color: lightblue;
+    border-style: solid;
+    border-color: green;
 }
 
 .category-node-leaf {
     background-color: darkgray;
 }
 
-.category-node-deficit-div,
+.category-node-imbalance-div,
 .category-node-surplus-div,
-.category-node-balanced-div{
-    display: inline-block;
+.category-node-balanced-div,
+.category-node-leaf-div {
+    display: block;
+    text-align: right;
     float: right;
     font-size: 90%;
     margin-right: 2%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    width: 100%;
+    color: black;
 }
 
-.category-node-deficit-div {
-    color: yellow;
-}
-
-.category-node-surplus-div {
-    color: lightblue;
-}
-
-.category-node-balanced-div {
-    color: darkblue;
+.treenode-newchild {
+    float: right;
+    background-color: lightgrey;
+    margin-right: 2%;
+    margin-bottom: 2%;
 }

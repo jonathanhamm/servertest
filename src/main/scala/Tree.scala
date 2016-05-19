@@ -75,6 +75,10 @@ class CategoryTree(data: CategoryData) {
       }
     }.mkString(";")
 
+    val idMap = varMap.map{case(_, (name, record)) =>
+      s"""${record.id}:$name"""
+    }.mkString("var cDataIdMap = {", ",", "}")
+
     val childAssign = varMap.map{ case(name, (varName, cat)) =>
       if(cat.children.size > 0) {
         cat.children.map { c =>
@@ -86,6 +90,6 @@ class CategoryTree(data: CategoryData) {
       else { "" }
     }.mkString(";")
 
-    s"$declarations;$childAssign"
+    s"$declarations;$idMap;$childAssign"
   }
 }

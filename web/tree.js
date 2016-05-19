@@ -19,7 +19,7 @@ Tree.Basic = Tree.Basic || {
 
         data.forEach(function(node){
             var li = document.createElement("li");
-            li.appendChild(_this.genNodeInfo(node));
+            li.appendChild(_this.genNodeInfo(node, li));
 
             if(node.children) {
                 _this._generateList(node.children, li);
@@ -29,42 +29,62 @@ Tree.Basic = Tree.Basic || {
         });
         elRoot.appendChild(ul);
     },
-    genNodeInfo: function(node) {
+    genNodeInfo: function(node, li) {
         var _this = this;
         var wrapper = document.createElement("div");
         wrapper.classList.add("treenode-wrapper");
         wrapper.setAttribute("id", "category-node-"+node.id);
 
-        var addChild = document.createElement("button");
-        addChild.setAttribute("type", "button");
-        var addChildText = document.createTextNode("Add Subcategory");
-        addChild.appendChild(addChildText);
-        wrapper.appendChild(addChild);
-
         var labelClass = "treenode-label";
-        var labelDiv = _this.genNodeProperty("Name", node.item, labelClass, node.item+"-"+labelClass);
+        var labelDiv = _this.genNodeProperty("Name", node.item, labelClass, labelClass + "-" + node.id);
         wrapper.appendChild(labelDiv);
 
         var startDateClass = "treenode-start-date";
-        var startDiv = _this.genNodeProperty("Start Date", node.start, startDateClass, node.item+"-"+startDateClass);
+        var startDiv = _this.genNodeProperty("Start Date", node.start, startDateClass, startDateClass + "-" + node.id);
         wrapper.appendChild(startDiv);
 
         var balanceClass = "treenode-balance";
-        var balanceDiv = _this.genNodeProperty("Balance", node.balance, balanceClass, node.item+"-"+balanceClass);
+        var balanceDiv = _this.genNodeProperty("Balance", node.balance, balanceClass, balanceClass + "-" + node.id);
         wrapper.appendChild(balanceDiv);
 
         var budgetClass = "treenode-budget";
-        var budgetDiv = _this.genNodeProperty("Budget", node.budget, budgetClass, node.item+"-"+budgetClass);
+        var budgetDiv = _this.genNodeProperty("Budget", node.budget, budgetClass, budgetClass + "-" + node.id);
         wrapper.appendChild(budgetDiv);
 
         var categoryClass = "treenode-category";
-        var categoryDiv = _this.genNodeProperty("Category", node.category, categoryClass, node.item+"-"+categoryClass);
+        var categoryDiv = _this.genNodeProperty("Category", node.category, categoryClass, categoryClass+ "-" + node.id);
         wrapper.appendChild(categoryDiv);
+
+        var newChild = document.createElement("button");
+        var newChildTxt = document.createTextNode("New Child");
+        newChild.classList.add("treenode-newchild");
+        newChild.setAttribute("type", "button");
+        newChild.appendChild(newChildTxt);
+        newChild.addEventListener("click", function() {
+            /*
+             var _c15 = {
+             "item": "qwerdi",
+             "id": 7,
+             "start": "2016-05-16",
+             "balance": 0.0,
+             "budget": 300.0,
+             "category": 6,
+             "parent": _c14
+             };
+
+             */
+
+            _this._generateList([{}], li);
+        });
+
+        wrapper.appendChild(newChild);
+
 
 
         return wrapper;
     },
     genNodeProperty: function (name, value, className, id) {
+        var _this = this;
         var div = document.createElement("div");
         div.classList.add(className);
         div.classList.add("node-property-wrapper");
@@ -76,8 +96,29 @@ Tree.Basic = Tree.Basic || {
 
         var input = document.createElement("input");
         input.setAttribute("id", id);
+        input.setAttribute("type", "button");
         input.value = value;
         input.classList.add("node-property-input");
+
+        input.addEventListener("click", function(){
+            if(input.getAttribute("type") == "button") {
+                input.setAttribute("type", "text");
+            }
+            else {
+                input.setAttribute("type", "button");
+            }
+        }, true);
+
+        input.addEventListener("keyup", function(e) {
+            var keyEnter = 13;
+            if(e.keyCode == keyEnter) {
+                var id = input.getAttribute("id");
+                var match = /.*-(\d+)$/.exec(id);
+                var node = cDataIdMap[match[1]];
+                _this.commitChanges(node);
+                input.setAttribute("type", "button");
+            }
+        });
 
         div.appendChild(labelDiv);
         div.appendChild(input);
@@ -95,53 +136,43 @@ Tree.Basic = Tree.Basic || {
 
         if(children) {
             var accum = 0;
-
             children.forEach(function(child){
                 _this.validateSubtree(child);
                 accum += child.budget;
             });
-
             var diff = root.budget - accum;
-
-            console.log("diff: " + diff + " " + (diff > 0));
-
             if(diff < 0) {
-                var deficit = document.createElement("div");
-                var deficitTxt = document.createTextNode("Deficit: $" + (-diff));
-                deficit.appendChild(deficitTxt);
-                deficit.classList.add("category-node-deficit-div");
-                elem.insertBefore(deficit, elem.childNodes[0]);
-                elem.classList.add("category-node-deficit");
+                genStatusNode("Imbalance: $" + (-diff), "category-node-imbalance", "category-node-imbalance-div");
             }
             else if(diff > 0) {
-                var surplus = document.createElement("div");
-                var surplusTxt = document.createTextNode("Surplus: $" + diff);
-                surplus.appendChild(surplusTxt);
-                surplus.classList.add("category-node-surplus-div");
-                elem.insertBefore(surplus, elem.childNodes[0]);
-                elem.classList.add("category-node-surplus");
+                genStatusNode("Surplus: $" + diff, "category-node-surplus", "category-node-surplus-div");
             }
             else {
-                var balanced = document.createElement("div");
-                var balancedTxt = document.createTextNode("Balanced");
-                balanced.appendChild(balancedTxt);
-                balanced.classList.add("category-node-balanced-div");
-                elem.insertBefore(balanced, elem.childNodes[0]);
-                elem.classList.add("category-node-balanced");
+                genStatusNode("Balanced", "category-node-balanced", "category-node-balanced-div");
             }
         }
         else {
-            elem.classList.add("category-node-leaf");
+            genStatusNode("Leaf", "category-node-leaf", "category-node-leaf-div");
+        }
+
+        function genStatusNode(text, elemClassName, divClassName) {
+            var div = document.createElement("div");
+            var divText = document.createTextNode(text);
+            div.appendChild(divText);
+            div.classList.add(divClassName);
+            elem.insertBefore(div, elem.childNodes[0]);
+            elem.classList.add(elemClassName);
         }
     },
     computeRemainder: function(child) {
 
     },
-    commitChanges: function() {
-        var _this = this;
+    commitChanges: function(node) {
+        alert("node: " + node.item);
+        /*var _this = this;
 
         var str = _this.treeToString();
-        $.post("/commit", _this.data);
+        $.post("/commit", _this.data);*/
     },
     treeToString: function() {
         function _treeToString(root) {
