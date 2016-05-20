@@ -16,6 +16,10 @@ case class CategoryTreeNode(id: Int, parent: Option[Int], name: String, list: Se
     children += child
   }
 
+  def genPrevs: String = {
+    list.tail.map("{" + _ + "}").mkString("[", ",", "]")
+  }
+
   def getParent(subTrees: Iterable[CategoryTreeNode]): Option[CategoryTreeNode] = {
     parent.flatMap( p => subTrees.find(_.id == p))
   }
@@ -64,12 +68,13 @@ class CategoryTree(data: CategoryData) {
     }.toMap
   }
 
+
   def emitJSONDeclarations(varMap: Map[String, (String, CategoryTreeNode)]): String = {
     val declarations = flatten.zipWithIndex.map{case (l, i) =>
       l.getParent(subTrees) match {
         case Some(p) => {
           val pVar = varMap(p.name) match {case(v, _) => v}
-          s"""var _c$i={"item":"${l.name}",${l.list.head.toString},"parent":$pVar}"""
+          s"""var _c$i={"item":"${l.name}",${l.list.head.toString},"parent":$pVar,"prevs":${l.genPrevs}}"""
         }
         case _ => s"""var _c$i={"item":"${l.name}",${l.list.head.toString}}"""
       }

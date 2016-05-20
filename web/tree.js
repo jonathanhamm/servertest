@@ -55,6 +55,19 @@ Tree.Basic = Tree.Basic || {
         var categoryDiv = _this.genNodeProperty("Category", node.category, categoryClass, categoryClass+ "-" + node.id);
         wrapper.appendChild(categoryDiv);
 
+        var history = document.createElement("div");
+        var historyTxt = document.createTextNode("Start: " + node.start);
+        history.classList.add("category-history");
+        history.appendChild(historyTxt);
+
+        history.addEventListener("mousewheel", function(e){
+            console.log("hello son");
+            e.preventDefault();
+        }, true);
+
+
+        wrapper.appendChild(history);
+
         var newChild = document.createElement("button");
         var newChildTxt = document.createTextNode("New Child");
         newChild.classList.add("treenode-newchild");
@@ -69,7 +82,7 @@ Tree.Basic = Tree.Basic || {
                 var parsedData = JSON.parse(data);
                 _this._generateList([parsedData], li);
             });
-        });
+        }, true);
 
         wrapper.appendChild(newChild);
         return wrapper;
@@ -168,5 +181,8 @@ Tree.Basic = Tree.Basic || {
     treeToString: function() {
         function _treeToString(root) {
         }
+    },
+    scrollTest: function(data) {
+        console.log("scroll called: " + data);
     }
 };
