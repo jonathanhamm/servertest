@@ -26,8 +26,8 @@ CREATE TABLE category_children(
   parent_id INTEGER,
   child_id INTEGER NOT NULL,
   PRIMARY KEY(id),
-  FOREIGN KEY(child_id) REFERENCES category(id),
-  FOREIGN KEY(parent_id) REFERENCES category(id)
+  FOREIGN KEY(child_id) REFERENCES category_budget(id),
+  FOREIGN KEY(parent_id) REFERENCES category_budget(id)
 );
 
 DROP TABLE IF EXISTS category_budget;
@@ -114,7 +114,7 @@ INSERT INTO category(parent_id,name,active) VALUES(3, 'qwerdi', TRUE);
 INSERT INTO category(parent_id,name,active) VALUES(4, 'derrp', TRUE);
 
 
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 700.0, (SELECT id FROM category WHERE name='BOB'));
+INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 00.0, (SELECT id FROM category WHERE name='BOB'));
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW()+10, 0.0, 500.0, (SELECT id FROM category WHERE name='BOB'));
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='asdf'));
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='q3r'));

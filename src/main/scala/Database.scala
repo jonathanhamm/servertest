@@ -1,6 +1,6 @@
 import java.util.Date
 import scalikejdbc._
-
+import collection.mutable.ListBuffer
 
 object Database {
   case class Purchase( id: Int,
@@ -85,6 +85,21 @@ object Database {
                              balance: Float,
                              budget: Float,
                              category: Int) {
+    var parent = Option.empty[Int]
+    var children = ListBuffer.empty[CategoryBudget]
+
+    def addChild(c: CategoryBudget): Unit = children += c
+
+    def setParent(p: Int): Unit = parent = Some(p)
+
+    def getParent(subTrees: Iterable[CategoryTreeNode]): Option[CategoryBudget] = {
+      parent.flatMap(p => subTrees.flatMap(_.list.find(_.id == p)).lastOption)
+    }
+
+    def getCategory(subTrees: Iterable[CategoryTreeNode]): Option[CategoryTreeNode] = {
+      subTrees.find(_.id == category)
+    }
+
     override def toString: String = {
       s""""id":$id,"start":"$start","balance":$balance,"budget":$budget,"category":$category"""
     }

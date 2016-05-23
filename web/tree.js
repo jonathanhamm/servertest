@@ -20,11 +20,9 @@ Tree.Basic = Tree.Basic || {
         data.forEach(function(node){
             var li = document.createElement("li");
             li.appendChild(_this.genNodeInfo(node, li));
-
             if(node.children) {
                 _this._generateList(node.children, li);
             }
-
             ul.appendChild(li);
         });
         elRoot.appendChild(ul);
@@ -64,7 +62,6 @@ Tree.Basic = Tree.Basic || {
             console.log("hello son");
             e.preventDefault();
         }, true);
-
 
         wrapper.appendChild(history);
 
