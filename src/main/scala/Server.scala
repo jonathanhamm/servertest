@@ -245,23 +245,14 @@ class ServerRequest extends Actor with ServerGlobal {
         rs.date(categoryBudget.resultName.start),
         rs.float(categoryBudget.resultName.balance),
         rs.float(categoryBudget.resultName.budget),
-        rs.int(categoryBudget.resultName.category)
+        rs.int(categoryBudget.resultName.category),
+        rs.intOpt(categoryBudget.resultName.pid)
       )
       (cat, catBud)
     }.list().apply()
 
-    val categoryChildren = Database.CategoryChildren.syntax
-    val childMap = collection.mutable.HashMap[Int, (Int, Int)]()
 
-    withSQL {
-      select.from(Database.CategoryChildren as categoryChildren)
-    }.map{rs ⇒
-      val key = rs.int(categoryChildren.id)
-      val parent = rs.int(categoryChildren.parent_id)
-      val child = rs.int(categoryChildren.child_id)
-      childMap += (key -> (parent, child))
-    }.list().apply()
-    new CategoryData(joined, childMap)
+    new CategoryData(joined)
   }
 
   def makeNewCategory(pID: Int): String = {

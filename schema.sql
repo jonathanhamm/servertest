@@ -26,18 +26,10 @@ CREATE TABLE category_budget(
   balance FLOAT,
   budget FLOAT,
   category INTEGER,
+  pid INTEGER,
   PRIMARY KEY(id),
-  FOREIGN KEY(category) REFERENCES category(id)
-);
-
-DROP TABLE IF EXISTS category_children;
-CREATE TABLE category_children(
-  id INTEGER AUTO_INCREMENT NOT NULL,
-  parent_id INTEGER,
-  child_id INTEGER NOT NULL,
-  PRIMARY KEY(id),
-  FOREIGN KEY(child_id) REFERENCES category_budget(id),
-  FOREIGN KEY(parent_id) REFERENCES category_budget(id)
+  FOREIGN KEY(category) REFERENCES category(id),
+  FOREIGN KEY(pid) REFERENCES category_budget(id)
 );
 
 DROP TABLE IF EXISTS income;
@@ -113,14 +105,14 @@ INSERT INTO category(name,active) VALUES('qwerdi', TRUE);
 INSERT INTO category(name,active) VALUES('derrp', TRUE);
 
 
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 00.0, (SELECT id FROM category WHERE name='BOB'));
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW()+10, 0.0, 500.0, (SELECT id FROM category WHERE name='BOB'));
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='asdf'));
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='q3r'));
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='2314'));
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='qwer'));
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='qwerdi'));
-INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='derrp'));
+INSERT INTO category_budget(start,balance,budget,category,pid) VALUES(NOW(), 0.0, 00.0, (SELECT id FROM category WHERE name='BOB'), NULL);
+INSERT INTO category_budget(start,balance,budget,category,pid) VALUES(NOW(), 0.0, 500.0, (SELECT id FROM category WHERE name='BOB'), NULL);
+INSERT INTO category_budget(start,balance,budget,category,pid) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='asdf'), 1);
+INSERT INTO category_budget(start,balance,budget,category,pid) VALUES(NOW(),  0.0, 300.0, (SELECT id FROM category WHERE name='q3r'), 3);
+INSERT INTO category_budget(start,balance,budget,category,pid) VALUES(NOW(), 0.0, 300.0, (SELECT id FROM category WHERE name='2314'), 2);
+INSERT INTO category_budget(start,balance,budget,category,pid) VALUES(NOW(),  0.0, 300.0, (SELECT id FROM category WHERE name='qwer'), 2);
+INSERT INTO category_budget(start,balance,budget,category,pid) VALUES(NOW(),  0.0, 300.0, (SELECT id FROM category WHERE name='qwerdi'), 1);
+INSERT INTO category_budget(start,balance,budget,category,pid) VALUES(NOW(),  0.0, 300.0, (SELECT id FROM category WHERE name='derrp'), 3);
 
 
 SET GLOBAL event_scheduler = 1;

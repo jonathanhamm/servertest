@@ -4,15 +4,14 @@
 
 import collection.mutable.ListBuffer
 
-case class CategoryData( joined: List[(Database.Category, Database.CategoryBudget)],
-                         children: collection.mutable.Map[Int, (Int, Int)])
+case class CategoryData( joined: List[(Database.Category, Database.CategoryBudget)])
 
 case class CategoryTreeNode(id: Int, name: String, list: Seq[Database.CategoryBudget]) extends Iterable[CategoryTreeNode] {
   override def iterator = Iterator[CategoryTreeNode]()
 
   def toJSON: String = list.map("{" + _ + "}").mkString("[", ",", "]")
 
-  def parent: Option[Int] = list.head.parent
+  def parent: Option[Int] = list.head.pid
 
 }
 
@@ -51,7 +50,7 @@ class CategoryTree(data: CategoryData) {
   def makeCategoryList(list: List[(Database.Category, Database.CategoryBudget)]): Seq[Database.CategoryBudget] = {
     list.map {
       case (_, bud: Database.CategoryBudget) =>
-        new Database.CategoryBudget(bud.id, bud.start, bud.balance, bud.budget, bud.category)
+        new Database.CategoryBudget(bud.id, bud.start, bud.balance, bud.budget, bud.category, bud.pid)
       case _ => null
     }
   }

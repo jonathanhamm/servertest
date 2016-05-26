@@ -65,25 +65,12 @@ object Database {
 
   }
 
-  case class CategoryChildren( id: Int,
-                               parent_id: Int,
-                               child_id: Int )
-  object CategoryChildren extends SQLSyntaxSupport[CategoryChildren] {
-    override val tableName = "category_children"
-    def apply(g: ResultName[CategoryChildren])(rs: WrappedResultSet): CategoryChildren = {
-      new CategoryChildren(
-        rs.int(g.id), rs.int(g.parent_id),
-        rs.int(g.child_id)
-      )
-    }
-  }
-
   case class CategoryBudget( id: Int,
                              start: Date,
                              balance: Float,
                              budget: Float,
-                             category: Int) {
-    var parent = Option.empty[Int]
+                             category: Int,
+                             pid: Option[Int]) {
     var children = ListBuffer.empty[CategoryBudget]
 
     def addChild(c: CategoryBudget): Unit = {
@@ -91,10 +78,8 @@ object Database {
       children += c
     }
 
-    def setParent(p: Int): Unit = parent = Some(p)
-
     def getParent(subTrees: Iterable[CategoryTreeNode]): Option[CategoryBudget] = {
-      parent.flatMap(p => subTrees.flatMap(_.list.find(_.id == p)).lastOption)
+      pid.flatMap(p => subTrees.flatMap(_.list.find(_.id == p)).lastOption)
     }
 
     def getCategory(subTrees: Iterable[CategoryTreeNode]): Option[CategoryTreeNode] = {
@@ -111,7 +96,7 @@ object Database {
       new CategoryBudget(
         rs.int(g.id), rs.date(g.start),
         rs.float(g.balance), rs.float(g.budget),
-        rs.int(g.category)
+        rs.int(g.category), rs.intOpt(g.pid)
       )
     }
   }
