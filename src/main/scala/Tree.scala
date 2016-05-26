@@ -7,10 +7,13 @@ import collection.mutable.ListBuffer
 case class CategoryData( joined: List[(Database.Category, Database.CategoryBudget)],
                          children: collection.mutable.Map[Int, (Int, Int)])
 
-case class CategoryTreeNode(id: Int, parent: Option[Int], name: String, list: Seq[Database.CategoryBudget]) extends Iterable[CategoryTreeNode] {
+case class CategoryTreeNode(id: Int, name: String, list: Seq[Database.CategoryBudget]) extends Iterable[CategoryTreeNode] {
   override def iterator = Iterator[CategoryTreeNode]()
 
   def toJSON: String = list.map("{" + _ + "}").mkString("[", ",", "]")
+
+  def parent: Option[Int] = list.head.parent
+
 }
 
 class CategoryTree(data: CategoryData) {
@@ -23,10 +26,26 @@ class CategoryTree(data: CategoryData) {
     subTrees ++= groups.map{ case(key, tuple) =>
       val (cat, _) = tuple.head
       val list = makeCategoryList(tuple)
-      new CategoryTreeNode(key, cat.parent_id, cat.name, list)
-    }
-    subTrees.foreach(_.list.foreach(n => n.getParent(subTrees).foreach(_.addChild(n))))
 
+      //list.foreach(l => l.setParent())
+      new CategoryTreeNode(key, cat.name, list)
+    }
+
+    println("subtrees size: " + subTrees.size)
+
+    subTrees.foreach{st =>
+      println("st list: " + st.list.size)
+      st.list.foreach{ n =>
+        if(n.getParent(subTrees).isEmpty) {
+          println("parent is empty")
+        }
+        else {
+          println("parent is not empty")
+        }
+
+        n.getParent(subTrees).foreach(_.addChild(n))
+      }
+    }
   }
 
   def makeCategoryList(list: List[(Database.Category, Database.CategoryBudget)]): Seq[Database.CategoryBudget] = {
@@ -36,13 +55,6 @@ class CategoryTree(data: CategoryData) {
       case _ => null
     }
   }
-
-  /*
-  def flatten: ListBuffer[CategoryTreeNode] = {
-    def flattenNode(root: CategoryTreeNode): ListBuffer[CategoryTreeNode] =
-      root +: root.children.flatMap(flattenNode)
-    subTrees.flatMap(flattenNode)
-  }*/
 
   def makeJsonString(): String = {
     val varMap = genVarMap()
@@ -57,7 +69,6 @@ class CategoryTree(data: CategoryData) {
       (c.name, ("_c" + i, c))
     }.toMap
   }
-
 
   def emitJSONDeclarations(varMap: Map[String, (String, CategoryTreeNode)]): String = {
     val declarations = subTrees.zipWithIndex.map{case (l, i) =>
@@ -80,9 +91,9 @@ class CategoryTree(data: CategoryData) {
     }.mkString("var cDataIdMap = {", ",", "}")
 
     val childAssign = varMap.map{ case(name, (varName, cat)) =>
-
       if(cat.list.head.children.size > 0) {
         cat.list.head.children.map{ c =>
+          println("at child: : " + c.id)
           c.getCategory(subTrees) match {
             case Some(t) => {
               varMap(t.name) match {

@@ -237,7 +237,6 @@ class ServerRequest extends Actor with ServerGlobal {
     }.map{ rs ⇒
       val cat = Database.Category(
         rs.int(category.resultName.id),
-        rs.intOpt(category.resultName.parent_id),
         rs.string(category.resultName.name),
         rs.boolean(category.resultName.active)
       )
@@ -271,7 +270,6 @@ class ServerRequest extends Actor with ServerGlobal {
     DB localTx { implicit session =>
       applyUpdate {
         insert.into(Database.Category).namedValues(
-          c.parent_id -> Some(pID),
           c.name -> "test",
           c.active -> true
         )

@@ -52,15 +52,13 @@ object Database {
   }
 
   case class Category( id: Int,
-                       parent_id: Option[Int],
                        name: String,
                        active: Boolean)
   object Category extends SQLSyntaxSupport[Category] {
     override val tableName = "category"
     def apply(g: ResultName[Category])(rs: WrappedResultSet): Category = {
       new Category(
-        rs.int(g.id), rs.intOpt(g.parent_id),
-        rs.string(g.name), rs.boolean(g.active)
+        rs.int(g.id), rs.string(g.name), rs.boolean(g.active)
       )
     }
     def apply(g: SyntaxProvider[Category])(rs: WrappedResultSet): Category = apply(g.resultName)(rs)
@@ -88,7 +86,10 @@ object Database {
     var parent = Option.empty[Int]
     var children = ListBuffer.empty[CategoryBudget]
 
-    def addChild(c: CategoryBudget): Unit = children += c
+    def addChild(c: CategoryBudget): Unit = {
+      println("add child called for: " + c.id)
+      children += c
+    }
 
     def setParent(p: Int): Unit = parent = Some(p)
 

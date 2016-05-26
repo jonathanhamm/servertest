@@ -14,20 +14,9 @@ CREATE TABLE account(
 DROP TABLE IF EXISTS category;
 CREATE TABLE category(
   id INTEGER AUTO_INCREMENT NOT NULL,
-  parent_id INTEGER,
   name VARCHAR(255),
   active BOOL DEFAULT TRUE,
   PRIMARY KEY(id)
-);
-
-DROP TABLE IF EXISTS category_children;
-CREATE TABLE category_children(
-  id INTEGER AUTO_INCREMENT NOT NULL,
-  parent_id INTEGER,
-  child_id INTEGER NOT NULL,
-  PRIMARY KEY(id),
-  FOREIGN KEY(child_id) REFERENCES category_budget(id),
-  FOREIGN KEY(parent_id) REFERENCES category_budget(id)
 );
 
 DROP TABLE IF EXISTS category_budget;
@@ -39,6 +28,16 @@ CREATE TABLE category_budget(
   category INTEGER,
   PRIMARY KEY(id),
   FOREIGN KEY(category) REFERENCES category(id)
+);
+
+DROP TABLE IF EXISTS category_children;
+CREATE TABLE category_children(
+  id INTEGER AUTO_INCREMENT NOT NULL,
+  parent_id INTEGER,
+  child_id INTEGER NOT NULL,
+  PRIMARY KEY(id),
+  FOREIGN KEY(child_id) REFERENCES category_budget(id),
+  FOREIGN KEY(parent_id) REFERENCES category_budget(id)
 );
 
 DROP TABLE IF EXISTS income;
@@ -106,12 +105,12 @@ INSERT INTO account(name,balance,description) VALUES('checking', 5000.0, 'Jonath
 INSERT INTO account(name,balance,description) VALUES('savings', 650.0, 'Jonathan Hamm\'s Savings Account');
 
 INSERT INTO category(name,active) VALUES('BOB', TRUE);
-INSERT INTO category(parent_id,name,active) VALUES(1, 'asdf', TRUE);
-INSERT INTO category(parent_id,name,active) VALUES(1, 'q3r', TRUE);
-INSERT INTO category(parent_id,name,active) VALUES(2, '2314', TRUE);
-INSERT INTO category(parent_id,name,active) VALUES(2, 'qwer', TRUE);
-INSERT INTO category(parent_id,name,active) VALUES(3, 'qwerdi', TRUE);
-INSERT INTO category(parent_id,name,active) VALUES(4, 'derrp', TRUE);
+INSERT INTO category(name,active) VALUES('asdf', TRUE);
+INSERT INTO category(name,active) VALUES('q3r', TRUE);
+INSERT INTO category(name,active) VALUES('2314', TRUE);
+INSERT INTO category(name,active) VALUES('qwer', TRUE);
+INSERT INTO category(name,active) VALUES('qwerdi', TRUE);
+INSERT INTO category(name,active) VALUES('derrp', TRUE);
 
 
 INSERT INTO category_budget(start,balance,budget,category) VALUES(NOW(), 0.0, 00.0, (SELECT id FROM category WHERE name='BOB'));
