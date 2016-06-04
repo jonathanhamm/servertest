@@ -9,7 +9,8 @@ case class CategoryData( joined: List[(Database.Category, Database.CategoryBudge
 case class CategoryTreeNode(id: Int, name: String, list: Seq[Database.CategoryBudget]) extends Iterable[CategoryTreeNode] {
   override def iterator = Iterator[CategoryTreeNode]()
 
-  def toJSON: String = list.map("{" + _ + "}").mkString("[", ",", "]")
+  def toJSON(n: Int): String =
+    list.take(n).map("{" + _ + "}").mkString("[", ",", "]")
 
   def parent: Option[Int] = list.head.pid
 
@@ -69,19 +70,19 @@ class CategoryTree(data: CategoryData) {
     }.toMap
   }
 
-  def emitJSONDeclarations(varMap: Map[String, (String, CategoryTreeNode)]): String = {
+  def emitJSONDeclarations(varMap: Map[String, (String, CategoryTreeNode)], budgetHistory: Int = 1): String = {
     val declarations = subTrees.zipWithIndex.map{case (l, i) =>
       l.list.head.getParent(subTrees) match {
         case Some(p) => {
           p.getCategory(subTrees) match {
             case Some(t) => {
               val pVar = varMap(t.name) match {case(v, _) => v}
-              s"""var _c$i={"item":"${l.name}","parent":$pVar,"budgets":${l.toJSON}}"""
+              s"""var _c$i={"item":"${l.name}","parent":$pVar,"budgets":${l.toJSON(budgetHistory)}}"""
             }
             case _ => """["Error: Category Not Found"]"""
           }
         }
-        case _ => s"""var _c$i={"item":"${l.name}",${l.list.head.toString}}"""
+        case _ => s"""var _c$i={"item":"${l.name}","budgets":${l.toJSON(budgetHistory)}}"""
       }
     }.mkString(";")
 
@@ -101,7 +102,7 @@ class CategoryTree(data: CategoryData) {
             }
             case _ => """["Error: Category Not Found"]"""
           }
-        }.mkString(s"$varName.children=[", ",", "]")
+        }.mkString(s"$varName.budgets[0].children=[", ",", "]")
       }
       else {""}
     }.mkString(";")

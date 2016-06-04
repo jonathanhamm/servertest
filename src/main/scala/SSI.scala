@@ -19,19 +19,19 @@ object SSI extends ServerGlobal {
     val ssiIncludePattern = "\\s*#include\\s+file\\s*=\\s*\"([^\"]+)\"".r
     val routineIncludePattern = "\\s*#include\\s+routine\\s*=\\s*\"([^\"]+)\"".r
 
-    doc.getAllElements.foreach { e ⇒
-      e.childNodes.filter(_.isInstanceOf[Comment]).zipWithIndex.foreach { case(n, i) ⇒
+    doc.getAllElements.foreach { e =>
+      e.childNodes.filter(_.isInstanceOf[Comment]).zipWithIndex.foreach { case(n, i) =>
         val comment = n.asInstanceOf[Comment]
         comment.getData match {
-          case ssiIncludePattern(fileName) ⇒ {
+          case ssiIncludePattern(fileName) => {
             if(depth <= maxDepth) {
               readPage(fileName) match {
-                case Success(nSrc) ⇒ {
+                case Success(nSrc) => {
                   val root = include(nSrc.mkString, routineMap, depth + 1)
                     .select(":root").first()
                   comment.replaceWith(root)
                 }
-                case Failure(f) ⇒ {
+                case Failure(f) => {
                   println("fail: " + f.getMessage)
                 }
               }
@@ -43,7 +43,7 @@ object SSI extends ServerGlobal {
               comment.replaceWith(root)
             }
           }
-          case routineIncludePattern(key) ⇒ {
+          case routineIncludePattern(key) => {
             val source = routineMap match {
               case Some(rMap) =>
                 rMap.get(key) match {

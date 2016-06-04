@@ -10,6 +10,7 @@ Tree.Basic = Tree.Basic || {
         _this.data = data;
         this._generateList(data, $("#categoryRoot")[0]);
         data.forEach(function(node){
+            console.log("calling validateSubtree() on: " + node.name);
             _this.validateSubtree(node);
         });
     },
@@ -20,8 +21,8 @@ Tree.Basic = Tree.Basic || {
         data.forEach(function(node){
             var li = document.createElement("li");
             li.appendChild(_this.genNodeInfo(node, li));
-            if(node.children) {
-                _this._generateList(node.children, li);
+            if(node.budgets[0].children) {
+                _this._generateList(node.budgets[0].children, li);
             }
             ul.appendChild(li);
         });
@@ -29,32 +30,35 @@ Tree.Basic = Tree.Basic || {
     },
     genNodeInfo: function(node, li) {
         var _this = this;
+
+        var nodeID = node.budgets[0].id;
+
         var wrapper = document.createElement("div");
         wrapper.classList.add("treenode-wrapper");
-        wrapper.setAttribute("id", "category-node-"+node.id);
+        wrapper.setAttribute("id", "category-node-"+nodeID);
 
         var labelClass = "treenode-label";
-        var labelDiv = _this.genNodeProperty("Name", node.item, labelClass, labelClass + "-" + node.id);
+        var labelDiv = _this.genNodeProperty("Name", node.item, labelClass, labelClass + "-" + nodeID);
         wrapper.appendChild(labelDiv);
 
         var startDateClass = "treenode-start-date";
-        var startDiv = _this.genNodeProperty("Start Date", node.start, startDateClass, startDateClass + "-" + node.id);
+        var startDiv = _this.genNodeProperty("Start Date", node.budgets[0].start, startDateClass, startDateClass + "-" + nodeID);
         wrapper.appendChild(startDiv);
 
         var balanceClass = "treenode-balance";
-        var balanceDiv = _this.genNodeProperty("Balance", node.balance, balanceClass, balanceClass + "-" + node.id);
+        var balanceDiv = _this.genNodeProperty("Balance", node.budgets[0].balance, balanceClass, balanceClass + "-" + nodeID);
         wrapper.appendChild(balanceDiv);
 
         var budgetClass = "treenode-budget";
-        var budgetDiv = _this.genNodeProperty("Budget", node.budget, budgetClass, budgetClass + "-" + node.id);
+        var budgetDiv = _this.genNodeProperty("Budget", node.budgets[0].budget, budgetClass, budgetClass + "-" + nodeID);
         wrapper.appendChild(budgetDiv);
 
         var categoryClass = "treenode-category";
-        var categoryDiv = _this.genNodeProperty("Category", node.category, categoryClass, categoryClass+ "-" + node.id);
+        var categoryDiv = _this.genNodeProperty("Category", node.budgets[0].category, categoryClass, categoryClass+ "-" + nodeID);
         wrapper.appendChild(categoryDiv);
 
         var history = document.createElement("div");
-        var historyTxt = document.createTextNode("Start: " + node.start);
+        var historyTxt = document.createTextNode("Start: " + node.budgets[0].start);
         history.classList.add("category-history");
         history.appendChild(historyTxt);
 
@@ -131,17 +135,16 @@ Tree.Basic = Tree.Basic || {
     },
     validateSubtree: function(root) {
         var _this = this;
-        console.log("visited: " + root.item + " " + root.id);
-        var children = root.children;
-        var elem = document.getElementById("category-node-" + root.id);
+        var children = root.budgets[0].children;
+        var elem = document.getElementById("category-node-" + root.budgets[0].id);
 
         if(children) {
             var accum = 0;
             children.forEach(function(child){
                 _this.validateSubtree(child);
-                accum += child.budget;
+                accum += child.budgets[0].budget;
             });
-            var diff = root.budget - accum;
+            var diff = root.budgets[0].budget - accum;
             if(diff < 0) {
                 genStatusNode("Imbalance: $" + (-diff), "category-node-imbalance", "category-node-imbalance-div");
             }

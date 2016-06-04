@@ -22,11 +22,11 @@ trait ServerGlobal {
 
 class Server(port: Int) extends Actor with ActorLogging {
   override def receive: Receive = {
-    case _: Http.Connected ⇒ {
+    case _: Http.Connected => {
       val serveActor = Start.system.actorOf(Props(new ServerRequest))
       sender ! Http.Register(serveActor)
     }
-    case msg ⇒ log.warning("Unkwown message: " + msg)
+    case msg => log.warning("Unkwown message: " + msg)
   }
 }
 
@@ -47,31 +47,31 @@ class ServerRequest extends Actor with ServerGlobal {
   Class.forName("com.mysql.jdbc.Driver")
 
   override def receive: Receive = {
-    case HttpRequest(HttpMethods.GET, Uri.Path(`route_home`), _, _, _) ⇒ {
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_home`), _, _, _) => {
       sender ! serveGet(`route_home`)
     }
-    case HttpRequest(HttpMethods.GET, Uri.Path(`route_history`), _, _, _) ⇒ {
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_history`), _, _, _) => {
       sender ! serveGet(`route_history`)
     }
-    case HttpRequest(HttpMethods.GET, Uri.Path(`route_plan`), _, _, _) ⇒ {
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_plan`), _, _, _) => {
       sender ! serveGet(`route_plan`)
     }
-    case HttpRequest(HttpMethods.GET, Uri.Path(`route_jquery`), _, _, _) ⇒ {
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_jquery`), _, _, _) => {
       sender ! serveGet(`route_jquery`)
     }
-    case HttpRequest(HttpMethods.GET, Uri.Path(`route_tree`), _, _, _) ⇒ {
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_tree`), _, _, _) => {
       sender ! serveGet(`route_tree`)
     }
-    case HttpRequest(HttpMethods.GET, Uri.Path(`route_tree_style`), _, _, _) ⇒ {
+    case HttpRequest(HttpMethods.GET, Uri.Path(`route_tree_style`), _, _, _) => {
       sender ! serveGet(`route_tree_style`)
     }
-    case HttpRequest(HttpMethods.POST, Uri.Path(`route_purchase`), header, entity, _) ⇒ {
-      header.find(_.name == "Content-Type").foreach{ h ⇒
+    case HttpRequest(HttpMethods.POST, Uri.Path(`route_purchase`), header, entity, _) => {
+      header.find(_.name == "Content-Type").foreach{ h =>
         h.value match {
-          case v if v.contains("application/x-www-form-urlencoded") ⇒ {
+          case v if v.contains("application/x-www-form-urlencoded") => {
               sender ! handlePurchase(urlFormEncodeToMap(entity.asString))
           }
-          case mime ⇒ {
+          case mime => {
             println("unknown mime type: " + mime)
           }
         }
@@ -94,23 +94,23 @@ class ServerRequest extends Actor with ServerGlobal {
         }
       }
     }
-    case HttpRequest(method, unknown, _, _, _) ⇒ {
+    case HttpRequest(method, unknown, _, _, _) => {
       println(s"404: ${method.toString()} : ${unknown.toString()} not found")
       sender ! make404()
     }
-    case x ⇒ {
+    case x => {
       println("x: " + x)
     }
   }
 
   def serveGet(route: String): HttpResponse = {
     readPage(route) match {
-      case Success(buffer) ⇒ {
+      case Success(buffer) => {
         val htmlPattern = "(.*\\.html?)$".r
         val body = buffer.mkString
         val payload = route match {
-          case htmlPattern(_) ⇒ SSI.include(body, Some(ssiRMap)).toString
-          case _ ⇒ body
+          case htmlPattern(_) => SSI.include(body, Some(ssiRMap)).toString
+          case _ => body
         }
         HttpResponse(
           entity = HttpEntity(MediaTypes.`text/html`, payload)
@@ -118,7 +118,7 @@ class ServerRequest extends Actor with ServerGlobal {
           HttpHeaders.Connection("close")
         ))
       }
-      case Failure(f) ⇒ {
+      case Failure(f) => {
         println("read failed: " + f.getMessage)
         make404()
       }
@@ -126,7 +126,7 @@ class ServerRequest extends Actor with ServerGlobal {
   }
 
   def urlFormEncodeToMap(data: String): Map[String,String] = {
-    data.split("&").map { prop ⇒
+    data.split("&").map { prop =>
       val p = prop.split("=")
 
       if(p.length == 2) {
@@ -136,22 +136,22 @@ class ServerRequest extends Actor with ServerGlobal {
         p(0) -> null
       }
     }
-    .toMap[String,String]
+    .toMap[String, String]
   }
 
   def handlePurchase(m: Map[String, String]): HttpResponse = {
     val num = "^\\d+(?:\\.\\d*)?$"
 
     if(
-      m.exists{case(k, v) ⇒ k == "value" && v != null && v.matches(num)}
+      m.exists{case(k, v) => k == "value" && v != null && v.matches(num)}
       &&
-      m.exists{case(k, _) ⇒ k == "category"}
+      m.exists{case(k, _) => k == "category"}
       &&
-      m.exists{case(k, _) ⇒ k == "name"}
+      m.exists{case(k, _) => k == "name"}
       &&
-      m.exists{case(k, _) ⇒ k == "account"}
+      m.exists{case(k, _) => k == "account"}
       &&
-      m.exists{case(k, _) ⇒ k == "date"}
+      m.exists{case(k, _) => k == "date"}
     ) {
       val value = m("value").toFloat
       val category = m("category")
@@ -163,7 +163,7 @@ class ServerRequest extends Actor with ServerGlobal {
       val aID = updateAccountAndGet(value, account)
 
       getLatestCategoryBudget(category) match {
-        case Some(cb) ⇒ {
+        case Some(cb) => {
           applyUpdate {
             insert.into(Database.Purchase).namedValues(
               c.value -> value, c.account -> aID,
@@ -173,7 +173,7 @@ class ServerRequest extends Actor with ServerGlobal {
           }
           HttpResponse(status = StatusCodes.OK)
         }
-        case _ ⇒ {
+        case _ => {
           HttpResponse(status = StatusCodes.InternalServerError)
         }
       }
@@ -216,7 +216,7 @@ class ServerRequest extends Actor with ServerGlobal {
 
     withSQL {
       select.from(Database.Account as account).where.eq(c.name, name)
-    }.map { rs ⇒
+    }.map { rs =>
       withSQL {
         update(Database.Account).set(
           c.balance -> (rs.float(account.resultName.balance) - diff)
@@ -234,7 +234,7 @@ class ServerRequest extends Actor with ServerGlobal {
     val joined = withSQL {
       select.from(Database.Category as category).join(Database.CategoryBudget as categoryBudget)
       .on(category.id, categoryBudget.category)
-    }.map{ rs ⇒
+    }.map{ rs =>
       val cat = Database.Category(
         rs.int(category.resultName.id),
         rs.string(category.resultName.name),
@@ -251,7 +251,6 @@ class ServerRequest extends Actor with ServerGlobal {
       (cat, catBud)
     }.list().apply()
 
-
     new CategoryData(joined)
   }
 
@@ -265,7 +264,7 @@ class ServerRequest extends Actor with ServerGlobal {
           c.active -> true
         )
       }
-      sql"SELECT LAST_INSERT_ID()".map(r => r.int(1)).single().apply()
+      sql"SELECT LAST_INSERT_ID()".map(_.int(1)).single().apply()
     }
     match {
       case Some(id) =>
@@ -274,12 +273,12 @@ class ServerRequest extends Actor with ServerGlobal {
     }
   }
 
-  val prepareCategoryData = () ⇒ {
+  val prepareCategoryData = () => {
     val tree = new CategoryTree(queryCategoryData())
     s"<script>${tree.makeJsonString()}</script>"
   }
 
-  val ssiRMap: Map[String, () ⇒ String] = Map(
+  val ssiRMap: Map[String, () => String] = Map(
     "fetchCategoryData" -> prepareCategoryData
   )
 }
