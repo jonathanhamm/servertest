@@ -8,11 +8,8 @@ Tree.Basic = Tree.Basic || {
     generateList: function(data) {
         var _this = this;
         _this.data = data;
-        this._generateList(data, $("#categoryRoot")[0]);
-        data.forEach(function(node){
-            console.log("calling validateSubtree() on: " + node.name);
-            _this.validateSubtree(node);
-        });
+        _this._generateList(data, $("#categoryRoot")[0]);
+        _this.validateRoot(data);
     },
     _generateList: function(data, elRoot) {
         var _this = this;
@@ -30,8 +27,8 @@ Tree.Basic = Tree.Basic || {
     },
     genNodeInfo: function(node, li) {
         var _this = this;
-
-        var nodeID = node.budgets[0].id;
+	
+        var nodeID = node.budgets[0].id - 1;
 
         var wrapper = document.createElement("div");
         wrapper.classList.add("treenode-wrapper");
@@ -110,7 +107,13 @@ Tree.Basic = Tree.Basic || {
                 input.setAttribute("type", "text");
             }
             else {
+                var match = input.id.match(/^.*-(\d+)$/);
+                var budId = match[1];
+                var object = cDataIdMap[budId];
+                object.budgets[0].budget = input.value;
+                console.log("value: " + object.budgets[0].budget);
                 input.setAttribute("type", "button");
+                _this.validateRoot();
             }
         }, true);
 
@@ -133,38 +136,61 @@ Tree.Basic = Tree.Basic || {
 
         return div;
     },
+    validateRoot: function() {
+        var _this = this;
+        _this.data.forEach(function(node){
+            _this.validateSubtree(node);
+        });
+    },
     validateSubtree: function(root) {
         var _this = this;
         var children = root.budgets[0].children;
-        var elem = document.getElementById("category-node-" + root.budgets[0].id);
-
-        if(children) {
+        var elem = document.getElementById("category-node-" + (root.budgets[0].id - 1));
+        
+	if(children) {
             var accum = 0;
             children.forEach(function(child){
                 _this.validateSubtree(child);
-                accum += child.budgets[0].budget;
+                var budget = 0 | child.budgets[0].budget;
+		accum += budget;
             });
             var diff = root.budgets[0].budget - accum;
-            if(diff < 0) {
-                genStatusNode("Imbalance: $" + (-diff), "category-node-imbalance", "category-node-imbalance-div");
+
+	    if(diff < 0) {
+		genStatusNode("Imbalance: $" + (-diff), "category-node-imbalance", "category-status-imbalance-div");
             }
             else if(diff > 0) {
-                genStatusNode("Surplus: $" + diff, "category-node-surplus", "category-node-surplus-div");
+                genStatusNode("Surplus: $" + diff, "category-node-surplus", "category-status-surplus-div");
             }
             else {
-                genStatusNode("Balanced", "category-node-balanced", "category-node-balanced-div");
+                genStatusNode("Balanced", "category-node-balanced", "category-status-balanced-div");
             }
         }
         else {
-            genStatusNode("Leaf", "category-node-leaf", "category-node-leaf-div");
+            genStatusNode("Leaf", "category-node-leaf", "category-status-leaf-div");
         }
+        console.log("curr budget: " + root.budgets[0].budget + " " + root.item);
 
         function genStatusNode(text, elemClassName, divClassName) {
-            var div = document.createElement("div");
+            var divResults = elem.getElementsByClassName("category-node-status-div");
             var divText = document.createTextNode(text);
-            div.appendChild(divText);
-            div.classList.add(divClassName);
-            elem.insertBefore(div, elem.childNodes[0]);
+            var div = null;
+            if(divResults.length > 0) {
+		div = divResults[0];
+                var classList = div.classList;
+                var statusClass = (classList[0].match(/^category-status.*/))
+                                    ? classList[0] : classList[1];
+                div.classList.remove(statusClass);
+                div.classList.add(divClassName);
+                div.firstChild.nodeValue = text;
+            }
+            else {
+                div = document.createElement("div");
+                div.appendChild(divText);
+                div.classList.add(divClassName);
+                div.classList.add("category-node-status-div");
+                elem.insertBefore(div, elem.childNodes[0]);
+            }
             elem.classList.add(elemClassName);
         }
     },

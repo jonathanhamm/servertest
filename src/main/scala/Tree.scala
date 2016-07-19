@@ -23,6 +23,7 @@ class CategoryTree(data: CategoryData) {
 
   def init(): Unit = {
     val groups = data.joined.groupBy{ case(category, _) => category.id}
+
     subTrees ++= groups.map{ case(key, tuple) =>
       val (cat, _) = tuple.head
       val list = makeCategoryList(tuple)
@@ -31,10 +32,7 @@ class CategoryTree(data: CategoryData) {
       new CategoryTreeNode(key, cat.name, list)
     }
 
-    println("subtrees size: " + subTrees.size)
-
     subTrees.foreach{st =>
-      println("st list: " + st.list.size)
       st.list.foreach{ n =>
         if(n.getParent(subTrees).isEmpty) {
           println("parent is empty")
@@ -42,7 +40,6 @@ class CategoryTree(data: CategoryData) {
         else {
           println("parent is not empty")
         }
-
         n.getParent(subTrees).foreach(_.addChild(n))
       }
     }
@@ -85,6 +82,8 @@ class CategoryTree(data: CategoryData) {
         case _ => s"""var _c$i={"item":"${l.name}","budgets":${l.toJSON(budgetHistory)}}"""
       }
     }.mkString(";")
+
+    varMap.foreach{case(_, (_, record)) => println("record id: " + record.id)}
 
     val idMap = varMap.map{case(_, (name, record)) =>
       s"""${record.id}:$name"""

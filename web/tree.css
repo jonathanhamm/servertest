@@ -62,10 +62,10 @@ div.item-outer > .item-inner > .record {
     background-color: darkgray;
 }
 
-.category-node-imbalance-div,
-.category-node-surplus-div,
-.category-node-balanced-div,
-.category-node-leaf-div {
+.category-status-imbalance-div,
+.category-status-surplus-div,
+.category-status-balanced-div,
+.category-status-leaf-div {
     display: block;
     text-align: right;
     float: right;
