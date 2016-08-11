@@ -74,7 +74,7 @@ class CategoryTree(data: CategoryData) {
           p.getCategory(subTrees) match {
             case Some(t) => {
               val pVar = varMap(t.name) match {case(v, _) => v}
-              s"""var _c$i={"item":"${l.name}","parent":$pVar,"budgets":${l.toJSON(budgetHistory)}}"""
+              s"""var _c$i={"id":"${l.id}","item":"${l.name}","parent":$pVar,"budgets":${l.toJSON(budgetHistory)}}"""
             }
             case _ => """["Error: Category Not Found"]"""
           }

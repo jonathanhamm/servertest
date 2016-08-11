@@ -254,22 +254,62 @@ class ServerRequest extends Actor with ServerGlobal {
     new CategoryData(joined)
   }
 
+  /*
+  var _c0 = {
+    "item": "qwer",
+    "parent": _c1,
+    "budgets": [{
+        "id": 6,
+        "start": "2016-05-25",
+        "balance": 0.0,
+        "budget": 300.0,
+        "category": 5
+    }]
+
+    s"""{"id":$id,"item":"","parent":$pID,"budgets":[{}]}"""
+};
+
+   */
   def makeNewCategory(pID: Int): String = {
     val c = Database.Category.column
 
     DB localTx { implicit session =>
       applyUpdate {
         insert.into(Database.Category).namedValues(
-          c.name -> "test",
-          c.active -> true
+            c.name -> "test",
+            c.active -> true
         )
       }
       sql"SELECT LAST_INSERT_ID()".map(_.int(1)).single().apply()
     }
     match {
-      case Some(id) =>
-        s"""{"id":$id,"item":"","parent":$pID,"start":"${new Date()}","balance":0,"budget":0,"category":$id}"""
+      case Some(id) => {
+        val bId = makeNewBudget(pID, id)
+        println("bID: " + bId)
+        s"""{"id":$id,"item":"","start":"${new Date()}","balance":0,"budget":0,"category":$id}"""
+      }
       case _ => ""
+    }
+  }
+
+  def makeNewBudget(pID: Int, category: Int): Int = {
+    val c = Database.CategoryBudget.column
+
+    DB localTx { implicit session =>
+      applyUpdate {
+        insert.into(Database.CategoryBudget).namedValues(
+          c.start -> new Date(),
+          c.balance -> 0.0f,
+          c.budget -> 0.0f,
+          c.category -> category,
+          c.pid -> pID
+        )
+      }
+      sql"SELECT LAST_INSERT_ID()".map(_.int(1)).single().apply()
+    }
+    match {
+      case Some(bId) => bId
+      case _ => -1
     }
   }
 

@@ -76,7 +76,6 @@ Tree.Basic = Tree.Basic || {
                 "parent": node.id
             }).done(function(data){
                 console.log("data: " + data);
-
                 var parsedData = JSON.parse(data);
                 _this._generateList([parsedData], li);
             });
@@ -157,19 +156,18 @@ Tree.Basic = Tree.Basic || {
             var diff = root.budgets[0].budget - accum;
 
 	    if(diff < 0) {
-		genStatusNode("Imbalance: $" + (-diff), "category-node-imbalance", "category-status-imbalance-div");
+		genStatusNode("imbalance: $" + (-diff), "category-node-imbalance", "category-status-imbalance-div");
             }
             else if(diff > 0) {
-                genStatusNode("Surplus: $" + diff, "category-node-surplus", "category-status-surplus-div");
+                genStatusNode("surplus: $" + diff, "category-node-surplus", "category-status-surplus-div");
             }
             else {
-                genStatusNode("Balanced", "category-node-balanced", "category-status-balanced-div");
+                genStatusNode("balanced", "category-node-balanced", "category-status-balanced-div");
             }
         }
         else {
             genStatusNode("Leaf", "category-node-leaf", "category-status-leaf-div");
         }
-        console.log("curr budget: " + root.budgets[0].budget + " " + root.item);
 
         function genStatusNode(text, elemClassName, divClassName) {
             var divResults = elem.getElementsByClassName("category-node-status-div");
